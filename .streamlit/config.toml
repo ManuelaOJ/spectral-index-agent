@@ -1,0 +1,25 @@
+[theme]
+primaryColor = "#4CAF50"
+backgroundColor = "#0a0f1a"
+secondaryBackgroundColor = "#111827"
+textColor = "#E2E8F0"
+borderColor = "#2d3548"
+font = "sans serif"
+
+# Colores explicitos del panel lateral, con los mismos tokens del sistema de
+# diseno de app/styles/theme.py. Sin esta seccion Streamlit los deriva solo.
+# Nota: los avisos "Invalid color passed for widgetBackgroundColor in
+# theme.sidebar" que aparecen en la consola del navegador son internos de
+# Streamlit 1.54; esas tres claves no son opciones validas de configuracion,
+# de modo que no se pueden silenciar desde aqui. Son inofensivos.
+[theme.sidebar]
+backgroundColor = "#0d1424"
+secondaryBackgroundColor = "#1e2433"
+textColor = "#E2E8F0"
+borderColor = "#2d3548"
+
+[server]
+headless = true
+
+[browser]
+gatherUsageStats = false

@@ -1,0 +1,30 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the master's thesis below."
+title: "Spectral Index Agent"
+type: software
+authors:
+  - family-names: "Orozco Jiménez"
+    given-names: "Manuela"
+license: MIT
+# TODO: add once the public repository exists
+# repository-code: "<PUBLIC_REPO_URL>"
+keywords:
+  - remote sensing
+  - spectral indices
+  - Landsat
+  - Sentinel-2
+  - LLM agent
+  - LangGraph
+preferred-citation:
+  type: thesis
+  thesis-type: "Master's thesis"
+  title: "Desarrollo de un agente de inteligencia artificial para la generación de índices espectrales a partir de imágenes satelitales"
+  authors:
+    - family-names: "Orozco Jiménez"
+      given-names: "Manuela"
+  institution:
+    name: "Universidad Nacional de Colombia, sede Medellín"
+  department: "Maestría en Ingeniería Analítica"
+  year: 2026
+  languages:
+    - es

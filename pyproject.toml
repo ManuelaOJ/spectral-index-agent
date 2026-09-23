@@ -1,0 +1,194 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "spectral-agent"
+version = "0.1.0"
+description = "AI-powered platform for satellite imagery analysis and mineral targeting using spectral indices"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+authors = [
+    { name = "Spectral Agent Team" }
+]
+keywords = [
+    "satellite-imagery",
+    "remote-sensing",
+    "spectral-indices",
+    "langchain",
+    "langgraph",
+    "ai-agent",
+    "geospatial",
+    "landsat",
+    "sentinel",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: GIS",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    # LangChain ecosystem
+    "langchain>=0.3.0,<0.4.0",
+    "langchain-core>=0.3.0,<0.4.0",
+    "langchain-openai>=0.2.0,<0.3.0",
+    "langchain-anthropic>=0.2.0,<0.3.0",
+    "langchain-google-genai>=2.0.0,<3.0.0",
+    "langgraph>=0.2.0,<0.3.0",
+    
+    # Data validation
+    "pydantic>=2.5.0,<3.0.0",
+    "pydantic-settings>=2.1.0,<3.0.0",
+    
+    # HTTP client
+    "httpx>=0.27.0,<0.28.0",
+    "requests>=2.31.0,<3.0.0",
+    "oauthlib>=3.2.0,<4.0.0",
+    "requests-oauthlib>=1.3.0,<2.0.0",
+    
+    # Geospatial (core)
+    "rasterio>=1.3.0,<1.5.0",
+    "geopandas>=0.14.0,<1.0.0",
+    "shapely>=2.0.0,<3.0.0",
+    "pyproj>=3.6.0,<4.0.0",
+    "sentinelhub>=3.10.0,<4.0.0",
+    
+    # Visualisation
+    "matplotlib>=3.8.0,<4.0.0",
+    "folium>=0.15.0,<1.0.0",
+    
+    # Utilities
+    "python-dotenv>=1.0.0,<2.0.0",
+    "rich>=13.7.0,<14.0.0",
+    "structlog>=24.1.0,<25.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.12.0",
+    "mypy>=1.8.0",
+    "ruff>=0.2.0",
+    "pre-commit>=3.6.0",
+    "ipython>=8.20.0",
+]
+notebooks = [
+    "jupyter>=1.0.0",
+    "jupyterlab>=4.0.0",
+    "matplotlib>=3.8.0",
+    "folium>=0.15.0",
+]
+ui = [
+    "streamlit>=1.30.0,<2.0.0",
+    "streamlit-folium>=0.18.0,<1.0.0",
+]
+all = [
+    "spectral-agent[dev,notebooks,ui]",
+]
+
+[project.urls]
+Homepage = "https://github.com/your-org/spectral-agent"
+Documentation = "https://github.com/your-org/spectral-agent#readme"
+Repository = "https://github.com/your-org/spectral-agent"
+Issues = "https://github.com/your-org/spectral-agent/issues"
+
+[project.scripts]
+spectral-agent = "spectral_agent.cli:main"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Tool Configuration
+# ─────────────────────────────────────────────────────────────────────────────
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/spectral_agent"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/tests",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = [
+    "-ra",
+    "-q",
+    "--strict-markers",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+]
+
+[tool.coverage.run]
+source = ["src/spectral_agent"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_ignores = true
+disallow_untyped_defs = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = [
+    "rasterio.*",
+    "geopandas.*",
+    "shapely.*",
+]
+ignore_missing_imports = true
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+src = ["src", "tests"]
+# Thesis-internal tooling is not held to library lint standards and
+# is excluded from the future public release.
+extend-exclude = ["evaluation", "scripts"]
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "UP",     # pyupgrade
+    "ARG",    # flake8-unused-arguments
+    "SIM",    # flake8-simplify
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "B008",   # do not perform function calls in argument defaults
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["spectral_agent"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["ARG001"]  # Unused function argument in tests
+# En la app de Streamlit los imports tardios son deliberados: primero hay que
+# ajustar sys.path para el layout src/, y st.set_page_config tiene que ser la
+# primera llamada a st.* de todo el proceso, antes de importar los componentes.
+"app/main.py" = ["E402"]
