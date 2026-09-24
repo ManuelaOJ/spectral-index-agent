@@ -37,8 +37,8 @@
 ├────────────────────────────────────────────────────────────────────────────────┤
 │                              EXTERNAL SERVICES                                   │
 │  ┌──────────────┐   ┌──────────────┐   ┌──────────────┐   ┌──────────────┐    │
-│  │  USGS M2M    │   │  Copernicus  │   │   OpenAI /   │   │   Storage    │    │
-│  │  (Landsat)   │   │  (Sentinel)  │   │   Anthropic  │   │  (S3/Local)  │    │
+│  │  USGS M2M    │   │  Copernicus  │   │   OpenAI /   │   │  Local disk  │    │
+│  │  (Landsat)   │   │  (Sentinel)  │   │   Anthropic  │   │   (data/)    │    │
 │  └──────────────┘   └──────────────┘   └──────────────┘   └──────────────┘    │
 └────────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -181,47 +181,47 @@ START → Node1(add search_results) → Node2(add downloaded_files) → END
 
 ---
 
-### 5. Observability & Scaling
+### 5. Observability
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                      OBSERVABILITY STACK                         │
+│                      OBSERVABILITY (tracking/)                   │
 │                                                                  │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
-│  │  LangSmith   │  │  Prometheus  │  │   Grafana    │          │
-│  │   Tracing    │  │   Metrics    │  │  Dashboards  │          │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘          │
-│         │                 │                 │                    │
-│         └─────────────────┼─────────────────┘                   │
-│                           │                                      │
-│  Tracked:                                                        │
-│  - LLM calls (tokens, latency)                                  │
-│  - Tool executions (success/failure)                            │
-│  - Graph traversals                                              │
-│  - Download speeds & sizes                                       │
-│  - Error rates                                                   │
+│  │  LangSmith   │  │  Token and   │  │  Step and    │          │
+│  │   tracing    │  │  cost usage  │  │ conversation │          │
+│  │  (optional)  │  │              │  │     logs     │          │
+│  └──────────────┘  └──────────────┘  └──────────────┘          │
+│                                                                  │
+│  Written as JSONL under data/logs/:                              │
+│  - token_usage.jsonl          (TokenTracker, CostTrackingHandler)│
+│  - pipeline_metrics.jsonl     (PipelineMetrics, step timings)    │
+│  - conversations.jsonl        (ConversationLogger)               │
+│  - debug_computations.jsonl   (DebugLogger)                      │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**Scaling Strategy:**
-- **Horizontal**: Multiple worker processes for downloads
-- **Async**: Non-blocking IO for API calls
-- **Caching**: Redis for search results, file checksums
-- **Queue**: Celery/RQ for background processing
+LangSmith tracing is not configured by the code. LangChain turns it on by itself
+when its standard variables are set (`LANGSMITH_TRACING=true`, `LANGSMITH_API_KEY`).
+
+**Performance:**
+- **Async**: the ingestion graph nodes are `async` functions
+- **Band cache**: `BandCache` (`tools/raster/band_cache.py`) keeps clipped bands,
+  so indices that share bands (e.g. NDVI and SAVI) do not clip them twice
+- **Retries**: USGS requests are retried with an increasing delay on HTTP 429 and 5xx
 
 ---
 
 ### 6. Extension Points
 
-The architecture supports future extensions:
+Where to extend the code:
 
 | Extension Point | Purpose | Implementation |
 |-----------------|---------|----------------|
 | New Satellites | Add data sources | Implement `BaseIngestionTool` (`core/base_tool.py`) |
-| Custom Indices | User-defined formulas | `IndicesRegistry.register()` |
-| New Agents | Specialized reasoning | Subclass `BaseAgent` |
-| Storage Backends | S3, GCS, Azure | `StorageAdapter` interface |
-| LLM Providers | Model flexibility | LangChain model abstraction |
+| Custom Indices | User-defined formulas | Add an entry to `SPECTRAL_INDICES` (`tools/indices/spectral_indices.py`) |
+| New Agents | Specialized reasoning | Change the system prompt or tool list in `graphs/agent_graph.py` |
+| LLM Providers | Model flexibility | Add a provider branch in `graphs/agent_graph.py` (OpenAI, Anthropic and Google today) |
 
 ---
 
