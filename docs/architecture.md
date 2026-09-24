@@ -73,7 +73,6 @@ The **LangGraph Orchestrator** manages workflow execution through stateful graph
 - **Stateful execution**: State persists across nodes
 - **Conditional routing**: Dynamic path selection based on results
 - **Checkpointing**: Resume from failures
-- **Human-in-the-loop**: Optional approval gates
 
 ---
 
@@ -174,7 +173,7 @@ START → Node1(add search_results) → Node2(add downloaded_files) → END
 │  │                      MEMORY STORE                           ││
 │  │  - Conversation history                                     ││
 │  │  - Previous results cache                                   ││
-│  │  - User preferences                                         ││
+│  │  - Last area of interest and date range                     ││
 │  └─────────────────────────────────────────────────────────────┘│
 └─────────────────────────────────────────────────────────────────┘
 ```
