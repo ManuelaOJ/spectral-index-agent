@@ -5,12 +5,12 @@ build-backend = "hatchling.build"
 [project]
 name = "spectral-agent"
 version = "0.1.0"
-description = "AI-powered platform for satellite imagery analysis and mineral targeting using spectral indices"
+description = "LLM agent that computes spectral index maps from Landsat and Sentinel-2 imagery from natural-language requests"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.11"
 authors = [
-    { name = "Spectral Agent Team" }
+    { name = "Manuela Orozco Jiménez" }
 ]
 keywords = [
     "satellite-imagery",
@@ -96,13 +96,10 @@ all = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/your-org/spectral-agent"
-Documentation = "https://github.com/your-org/spectral-agent#readme"
-Repository = "https://github.com/your-org/spectral-agent"
-Issues = "https://github.com/your-org/spectral-agent/issues"
-
-[project.scripts]
-spectral-agent = "spectral_agent.cli:main"
+Homepage = "https://github.com/ManuelaOJ/spectral-index-agent"
+Documentation = "https://github.com/ManuelaOJ/spectral-index-agent#readme"
+Repository = "https://github.com/ManuelaOJ/spectral-index-agent"
+Issues = "https://github.com/ManuelaOJ/spectral-index-agent/issues"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Tool Configuration

@@ -1,8 +1,8 @@
 """
 Spectral Reasoning Agent.
 
-The main agent that orchestrates satellite imagery analysis and mineral targeting
-using LangChain tools and LangGraph workflows.
+The main agent that orchestrates satellite imagery search, download and spectral
+index computation using LangChain tools and LangGraph workflows.
 
 .. note::
    For the *memory-enabled* agent backed by ``MemorySaver``, prefer

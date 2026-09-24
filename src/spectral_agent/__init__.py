@@ -1,8 +1,8 @@
 """
 Spectral Index Agent Platform
 
-An AI-powered platform for satellite imagery analysis and mineral targeting
-using spectral indices with LangChain and LangGraph.
+An LLM agent that turns a natural-language request into spectral index maps
+computed from Landsat and Sentinel-2 imagery, built with LangChain and LangGraph.
 """
 
 __version__ = "0.1.0"

@@ -59,8 +59,7 @@ transitive dependency, so all machines resolve to the same environment.
 Python 3.11 or later is required (uv downloads it if missing).
 
 ```bash
-# TODO: replace <PUBLIC_REPO_URL> once the public repository exists
-git clone <PUBLIC_REPO_URL> spectral-index-agent
+git clone https://github.com/ManuelaOJ/spectral-index-agent.git
 cd spectral-index-agent
 
 uv sync --extra ui     # agent + Streamlit interface

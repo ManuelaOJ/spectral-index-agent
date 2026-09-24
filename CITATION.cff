@@ -6,8 +6,7 @@ authors:
   - family-names: "Orozco Jiménez"
     given-names: "Manuela"
 license: MIT
-# TODO: add once the public repository exists
-# repository-code: "<PUBLIC_REPO_URL>"
+repository-code: "https://github.com/ManuelaOJ/spectral-index-agent"
 keywords:
   - remote sensing
   - spectral indices

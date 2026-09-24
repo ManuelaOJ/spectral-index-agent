@@ -110,7 +110,7 @@ Tools are the atomic units of capability, wrapped for agent consumption:
 |----------|-------|----------|
 | Ingestion | `LandsatTool`, `SentinelTool` | `tools/ingestion/` |
 | Preprocessing | `CloudMaskTool`, `ReprojectionTool` | `tools/preprocessing/` |
-| Indices | `SpectralIndexTool`, `MineralIndexTool` | `tools/indices/` |
+| Indices | `SpectralIndexTool` | `tools/indices/` |
 | Analysis | `AnomalyTool`, `ClassificationTool` | `tools/analysis/` |
 
 ---
@@ -220,52 +220,6 @@ The architecture supports future extensions:
 | New Agents | Specialized reasoning | Subclass `BaseAgent` |
 | Storage Backends | S3, GCS, Azure | `StorageAdapter` interface |
 | LLM Providers | Model flexibility | LangChain model abstraction |
-
----
-
-## Data Flow Example: Mineral Targeting
-
-```
-User: "Find potential iron oxide deposits in this region for 2024"
-
-┌─────────────────────────────────────────────────────────────────┐
-│ 1. PARSE REQUEST                                                 │
-│    → Extract: AOI, date range (2024), target (iron oxide)       │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│ 2. INGESTION GRAPH                                               │
-│    → Search Landsat + Sentinel for AOI                          │
-│    → Download cloud-free scenes                                  │
-│    → Output: Raw imagery files                                   │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│ 3. PREPROCESSING GRAPH                                           │
-│    → Atmospheric correction                                      │
-│    → Cloud masking                                               │
-│    → Output: Analysis-ready data                                 │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│ 4. INDEX COMPUTATION                                             │
-│    → LLM selects: Ferric Iron Ratio, Iron Oxide Index           │
-│    → Compute indices on imagery                                  │
-│    → Output: Index rasters                                       │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│ 5. ANALYSIS & REPORTING                                          │
-│    → Threshold anomalies                                         │
-│    → Generate target polygons                                    │
-│    → Create PDF report with maps                                 │
-│    → Output: Report + GeoJSON targets                            │
-└─────────────────────────────────────────────────────────────────┘
-```
 
 ---
 
