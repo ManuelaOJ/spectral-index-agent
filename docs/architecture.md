@@ -72,7 +72,7 @@ The **LangGraph Orchestrator** manages workflow execution through stateful graph
 **Key Characteristics:**
 - **Stateful execution**: State persists across nodes
 - **Conditional routing**: Dynamic path selection based on results
-- **Checkpointing**: Resume from failures
+- **Conversation memory**: chat history kept per session (`MemorySaver`)
 
 ---
 
