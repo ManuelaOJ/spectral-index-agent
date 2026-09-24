@@ -11,7 +11,7 @@
 │  │   USER / API    │───▶│              LANGGRAPH ORCHESTRATOR              │   │
 │  └─────────────────┘    │                                                   │   │
 │                         │  ┌─────────┐   ┌─────────┐   ┌─────────┐        │   │
-│                         │  │ INGEST  │──▶│ PREPROC │──▶│ ANALYZE │        │   │
+│                         │  │ INGEST  │──▶│ RASTER  │──▶│  MAPS   │        │   │
 │                         │  └─────────┘   └─────────┘   └─────────┘        │   │
 │                         │       │             │             │              │   │
 │                         │       ▼             ▼             ▼              │   │
@@ -25,13 +25,13 @@
 │              ┌─────▼─────┐            ┌─────▼─────┐            ┌─────▼─────┐  │
 │              │  LANGCHAIN │            │  LANGCHAIN │            │  LANGCHAIN │  │
 │              │   TOOLS    │            │   TOOLS    │            │   TOOLS    │  │
-│              │ (Ingestion)│            │ (Preproc)  │            │ (Indices)  │  │
+│              │ (Ingestion)│            │  (Raster)  │            │  (Maps)    │  │
 │              └─────┬─────┘            └─────┬─────┘            └─────┬─────┘  │
 │                    │                         │                         │       │
 │              ┌─────▼─────┐            ┌─────▼─────┐            ┌─────▼─────┐  │
-│              │  Landsat  │            │   Cloud   │            │  Spectral │  │
-│              │  Sentinel │            │   Mask    │            │   Index   │  │
-│              │    API    │            │  Reproject│            │  Compute  │  │
+│              │  Landsat  │            │ Crop bands│            │ Thematic  │  │
+│              │  Sentinel │            │  Compute  │            │  PNG and  │  │
+│              │    API    │            │   index   │            │ HTML maps │  │
 │              └───────────┘            └───────────┘            └───────────┘  │
 │                                                                                 │
 ├────────────────────────────────────────────────────────────────────────────────┤
@@ -108,10 +108,12 @@ Tools are the atomic units of capability, wrapped for agent consumption:
 **Tool Categories:**
 | Category | Tools | Location |
 |----------|-------|----------|
-| Ingestion | `LandsatTool`, `SentinelTool` | `tools/ingestion/` |
-| Preprocessing | `CloudMaskTool`, `ReprojectionTool` | `tools/preprocessing/` |
-| Indices | `SpectralIndexTool` | `tools/indices/` |
-| Analysis | `AnomalyTool`, `ClassificationTool` | `tools/analysis/` |
+| Ingestion | `search_landsat_tool`, `download_landsat_tool`, `search_sentinel_tool`, `download_sentinel_tool`, `download_sentinel_index_tool`, `search_satellite_imagery_tool` | `tools/ingestion/lc_tools.py` |
+| Raster | `crop_landsat_bands_tool`, `compute_spectral_index_tool`, `list_cached_bands_tool`, `list_available_indices_tool` | `tools/raster/lc_tools.py` |
+| Visualization | `generate_thematic_map_tool` | `tools/visualization/lc_tools.py` |
+
+Index formulas and band requirements are defined in `tools/indices/spectral_indices.py`.
+All tools are collected in `tools/_registry.py` (`get_all_tools()`).
 
 ---
 
@@ -164,7 +166,7 @@ START → Node1(add search_results) → Node2(add downloaded_files) → END
 │         ┌────────────────────┼────────────────────┐             │
 │         ▼                    ▼                    ▼             │
 │   ┌───────────┐        ┌───────────┐        ┌───────────┐      │
-│   │ Ingestion │        │  Index    │        │  Analysis │      │
+│   │ Ingestion │        │  Raster   │        │    Map    │      │
 │   │   Tools   │        │   Tools   │        │   Tools   │      │
 │   └───────────┘        └───────────┘        └───────────┘      │
 │                                                                  │
@@ -215,7 +217,7 @@ The architecture supports future extensions:
 
 | Extension Point | Purpose | Implementation |
 |-----------------|---------|----------------|
-| New Satellites | Add data sources | Implement `BaseSatelliteTool` |
+| New Satellites | Add data sources | Implement `BaseIngestionTool` (`core/base_tool.py`) |
 | Custom Indices | User-defined formulas | `IndicesRegistry.register()` |
 | New Agents | Specialized reasoning | Subclass `BaseAgent` |
 | Storage Backends | S3, GCS, Azure | `StorageAdapter` interface |
