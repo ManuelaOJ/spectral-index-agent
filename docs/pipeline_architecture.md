@@ -1,6 +1,6 @@
 # Documentación Técnica: Arquitectura del Pipeline y Agente de Índices Espectrales
 
-> **Proyecto de Tesis de Maestría** — Analítica Aplicada e Inteligencia Artificial para análisis geoespacial.
+> **Proyecto de Tesis de Maestría** — Maestría en Ingeniería Analítica, Universidad Nacional de Colombia, sede Medellín.
 >
 > Este documento describe de forma exhaustiva la arquitectura del sistema, el pipeline de procesamiento, el diseño del agente y las decisiones de ingeniería detrás del *Spectral Index Agent*.
 
@@ -53,7 +53,7 @@ El pipeline es el **motor de procesamiento de datos** del sistema. Define las et
 
 ### 1.4 Rol de los Agentes dentro del Sistema
 
-El agente es el **orquestador inteligente** que decide qué herramientas invocar, en qué orden, y con qué parámetros. Utiliza un LLM (GPT-4o o Claude) con el patrón ReAct (Reasoning + Acting) para:
+El agente es el **orquestador inteligente** que decide qué herramientas invocar, en qué orden, y con qué parámetros. Utiliza un LLM (GPT-4o, Gemini 2.5 Flash o Claude) con el patrón ReAct (Reasoning + Acting) para:
 
 - Interpretar la intención del usuario en lenguaje natural
 - Seleccionar y ejecutar herramientas en la secuencia correcta
@@ -92,7 +92,7 @@ graph TB
 
     subgraph "Capa de Orquestación (LangGraph)"
         AGENT["🤖 Agente ReAct<br/>(graphs/agent_graph.py)"]
-        LLM["🧠 LLM<br/>(GPT-4o / Claude)"]
+        LLM["🧠 LLM<br/>(GPT-4o / Gemini / Claude)"]
         MEMORY["💾 MemorySaver<br/>(Checkpointer)"]
         SESSION["📋 SessionStore<br/>(memory/session_store.py)"]
     end
@@ -1233,7 +1233,7 @@ Renderiza: sidebar → header → barra de estado → columnas (mapas + chat).
 | **Doble pipeline** | El pipeline NLP (4 capas) proporciona trazabilidad y auditabilidad; el agente ReAct proporciona flexibilidad |
 | **Eficiencia de cache** | BandCache evita procesamiento redundante cuando múltiples índices comparten bandas |
 | **Seguridad** | Protección contra path traversal en extracción de tar, validación de coordenadas WGS84, jerarquía de excepciones tipada |
-| **Multi-proveedor** | Soporte para OpenAI y Anthropic como LLMs, y para USGS y Copernicus como proveedores satelitales |
+| **Multi-proveedor** | Soporte para OpenAI, Google (Gemini) y Anthropic como LLMs, y para USGS y Copernicus como proveedores satelitales |
 | **Aislamiento de sesión** | Cada thread tiene su propio directorio de datos y estado de sesión |
 
 ### 9.4 Posibles Limitaciones
@@ -1263,7 +1263,7 @@ graph TB
 
     subgraph "Capa de Orquestación"
         REACT["Agente ReAct<br/>(LangGraph)"]
-        LLM["LLM<br/>(GPT-4o / Claude)"]
+        LLM["LLM<br/>(GPT-4o / Gemini / Claude)"]
         MEM["MemorySaver"]
     end
 

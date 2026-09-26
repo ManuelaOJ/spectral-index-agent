@@ -154,7 +154,6 @@ docs/                # architecture notes
 
 - [Architecture](docs/architecture.md)
 - [Pipeline architecture](docs/pipeline_architecture.md)
-- [Landsat imagery notes](docs/landsat_imagery.md)
 
 ## Citation
 

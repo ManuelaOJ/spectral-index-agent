@@ -1,0 +1,11 @@
+<?xml version="1.0" standalone="no"?>
+<!-- North arrow drawn for spectral-index-agent (MIT License). -->
+<svg version="1.0" xmlns="http://www.w3.org/2000/svg"
+ width="189pt" height="267pt" viewBox="0 0 189 267"
+ preserveAspectRatio="xMidYMid meet">
+<g transform="translate(0,267) scale(0.1,-0.1)" fill="#000000" stroke="none">
+<path d="M945 2560 L945 1330 L1720 880 Z"/>
+<path d="M945 2560 L170 880 L945 1330 Z M885 2287 L885 1365 L304 1027 Z"/>
+<path d="M640 220 L740 220 L740 625 L1140 220 L1240 220 L1240 800 L1140 800 L1140 395 L740 800 L640 800 Z"/>
+</g>
+</svg>

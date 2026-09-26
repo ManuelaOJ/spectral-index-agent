@@ -922,7 +922,7 @@ def _format_scale_label(value: float) -> str:
 # SVG North-Arrow Rendering
 # ─────────────────────────────────────────────────────────────────────────────
 
-_SVG_NORTH_ARROW = Path(__file__).resolve().parents[4] / "data" / "north" / "5ZPyi.svg"
+_SVG_NORTH_ARROW = Path(__file__).resolve().parent / "assets" / "north_arrow.svg"
 _north_arrow_cache: np.ndarray | None = None
 
 
