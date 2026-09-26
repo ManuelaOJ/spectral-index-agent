@@ -135,7 +135,6 @@ no credentials.
 
 ```
 src/spectral_agent/
-├── agents/          # LLM factory and agent helpers
 ├── config/          # pydantic-settings (SPECTRAL_ prefix)
 ├── core/            # base classes and exceptions
 ├── graphs/          # LangGraph agent (agent_graph.py) and ingestion workflow

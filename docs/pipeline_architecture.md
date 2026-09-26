@@ -72,7 +72,7 @@ El sistema está compuesto por siete capas arquitectónicas principales:
 | Capa | Módulo | Responsabilidad |
 |------|--------|-----------------|
 | **Interfaz de Usuario** | `app/` | Aplicación Streamlit con chat conversacional, visualización de mapas y panel lateral |
-| **Agente Orquestador** | `agents/`, `graphs/` | Agente ReAct basado en LangGraph que interpreta consultas y orquesta herramientas |
+| **Agente Orquestador** | `graphs/` | Agente ReAct basado en LangGraph que interpreta consultas y orquesta herramientas |
 | **Herramientas (Tools)** | `tools/` | Funciones ejecutables por el agente: búsqueda, descarga, recorte, cómputo, mapas |
 | **Pipeline NLP** | `pipeline/` | Extracción estructurada de solicitudes desde lenguaje natural |
 | **Esquemas de Datos** | `schemas/` | Modelos Pydantic que definen la estructura de datos en cada etapa |
@@ -880,33 +880,11 @@ SpectralAgentError
   └── ConfigurationError     — Configuración inválida o faltante
 ```
 
-### 8.4 Agente y Grafo (`agents/` y `graphs/`)
+### 8.4 Agente y Grafo (`graphs/`)
 
-#### `agents/spectral_agent.py` — Módulo del Agente Original
+#### `graphs/agent_graph.py` — Agente con Memoria
 
-Este módulo proporciona la implementación original y más simple del agente. Contiene:
-
-1. **`SpectralAgentConfig`**: Dataclass con parámetros del agente (provider, model, temperature, system_prompt, use_memory). El método `from_settings()` crea la configuración desde las variables de entorno.
-
-2. **`DEFAULT_SYSTEM_PROMPT`**: Prompt del sistema que define la persona del agente como un "AI Geologist and Remote Sensing Specialist" con conocimiento de imágenes satelitales, índices espectrales y exploración mineral.
-
-3. **`get_llm(config)`**: Factoría que crea la instancia LLM apropiada (ChatOpenAI o ChatAnthropic) con el callback `CostTrackingHandler` para tracking de costos.
-
-4. **`create_spectral_agent(config, additional_tools, checkpointer)`**: Función principal que ensambla el agente:
-   ```python
-   agent = create_react_agent(
-       model=llm,
-       tools=tools,
-       prompt=system_prompt,
-       checkpointer=checkpointer,
-   )
-   ```
-
-5. **`run_agent_query(query, config, thread_id, agent)`**: Función de conveniencia para ejecutar una consulta simple de forma asíncrona.
-
-#### `graphs/agent_graph.py` — Agente con Memoria Mejorado
-
-Este módulo es la versión mejorada y preferida del agente. Las diferencias clave respecto a `spectral_agent.py`:
+Este módulo define el agente. Sus piezas principales:
 
 1. **`AgentDeps`**: Dataclass de dependencias que consolida TODAS las configuraciones necesarias (provider, model, API keys, session_store, checkpointer). El patrón de inyección de dependencias hace al agente más testeable.
 

@@ -5,7 +5,6 @@ Tests cover:
   1. SessionState — artefact registration, lookups, summary
   2. SessionStore — CRUD, isolation between sessions
   3. agent_graph — graph construction, MemorySaver wiring
-  4. spectral_agent — backwards-compatible create_spectral_agent with memory
 """
 
 from __future__ import annotations
@@ -232,64 +231,3 @@ class TestAgentGraph:
         deps = AgentDeps.from_settings(temperature=0.5)
         assert deps.temperature == 0.5
         assert deps.provider == "openai"  # default from settings
-
-
-# ═════════════════════════════════════════════════════════════════════════════
-# spectral_agent — backwards-compatible upgrades
-# ═════════════════════════════════════════════════════════════════════════════
-
-
-class TestSpectralAgentUpgrade:
-    @pytest.fixture()
-    def _fake_settings(self, monkeypatch):
-        from spectral_agent.config.settings import Settings
-
-        fake = Settings(
-            openai_api_key="sk-test-fake-key",
-            data_dir="data",
-            raw_data_dir="data/raw",
-            processed_data_dir="data/processed",
-            cache_dir="data/cache",
-        )
-        monkeypatch.setattr(
-            "spectral_agent.agents.spectral_agent.get_settings",
-            lambda: fake,
-        )
-
-    def test_create_agent_has_checkpointer_by_default(self, _fake_settings):
-        from spectral_agent.agents.spectral_agent import (
-            SpectralAgentConfig,
-            create_spectral_agent,
-        )
-
-        cfg = SpectralAgentConfig(provider="openai", model="gpt-4o")
-        agent = create_spectral_agent(cfg)
-        assert agent.checkpointer is not None
-
-    def test_create_agent_no_memory(self, _fake_settings):
-        from spectral_agent.agents.spectral_agent import (
-            SpectralAgentConfig,
-            create_spectral_agent,
-        )
-
-        cfg = SpectralAgentConfig(provider="openai", model="gpt-4o", use_memory=False)
-        agent = create_spectral_agent(cfg)
-        assert agent.checkpointer is None
-
-    def test_create_agent_custom_checkpointer(self, _fake_settings):
-        from langgraph.checkpoint.memory import MemorySaver
-
-        from spectral_agent.agents.spectral_agent import (
-            SpectralAgentConfig,
-            create_spectral_agent,
-        )
-
-        cp = MemorySaver()
-        cfg = SpectralAgentConfig(provider="openai", model="gpt-4o")
-        agent = create_spectral_agent(cfg, checkpointer=cp)
-        assert agent.checkpointer is cp
-
-    def test_config_use_memory_default_true(self):
-        from spectral_agent.agents.spectral_agent import SpectralAgentConfig
-
-        assert SpectralAgentConfig().use_memory is True

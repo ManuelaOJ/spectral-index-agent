@@ -101,7 +101,7 @@ _MODELS_BY_PROVIDER: dict[str, list[str]] = {
     "openai": ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo"],
     "google": ["gemini-2.5-flash"],
     # El agente tambien soporta Anthropic
-    # (src/spectral_agent/agents/spectral_agent.py).  No se ofrece aqui
+    # (src/spectral_agent/graphs/agent_graph.py).  No se ofrece aqui
     # porque ningun modelo de ese proveedor se evaluo en el documento;
     # para reactivarlo basta agregarlo a _PROVIDERS y listar sus modelos.
 }
