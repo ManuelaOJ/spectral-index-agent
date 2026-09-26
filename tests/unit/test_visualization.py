@@ -6,26 +6,25 @@ tiny GeoTIFFs with known values, so tests run in < 2 s and need no real
 imagery data.
 """
 
+from pathlib import Path
+
 import numpy as np
 import pytest
 import rasterio
-from pathlib import Path
 from rasterio.crs import CRS
 from rasterio.transform import from_bounds
 
-from spectral_agent.tools.visualization.thematic_map import (
-    MapConfig,
-    MapResult,
-    generate_thematic_map,
-    INDEX_CMAPS,
-    INDEX_FULL_NAMES,
-    _nice_round,
-)
 from spectral_agent.tools.visualization.interactive_map import (
     InteractiveMapResult,
     generate_interactive_map,
 )
-
+from spectral_agent.tools.visualization.thematic_map import (
+    INDEX_CMAPS,
+    MapConfig,
+    MapResult,
+    _nice_round,
+    generate_thematic_map,
+)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Helpers / fixtures
@@ -76,9 +75,13 @@ def gradient_raster(tmp_path: Path) -> Path:
     grad = np.linspace(-1, 1, HEIGHT).reshape(-1, 1)
     data = np.broadcast_to(grad, (HEIGHT, WIDTH)).astype("float32")
     profile = {
-        "driver": "GTiff", "dtype": "float32",
-        "width": WIDTH, "height": HEIGHT, "count": 1,
-        "crs": RASTER_CRS, "transform": TRANSFORM,
+        "driver": "GTiff",
+        "dtype": "float32",
+        "width": WIDTH,
+        "height": HEIGHT,
+        "count": 1,
+        "crs": RASTER_CRS,
+        "transform": TRANSFORM,
         "nodata": float("nan"),
     }
     with rasterio.open(path, "w", **profile) as dst:
@@ -96,6 +99,7 @@ def output_dir(tmp_path: Path) -> Path:
 # ─────────────────────────────────────────────────────────────────────────────
 # Tests — static thematic map
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class TestThematicMap:
     """Tests for generate_thematic_map."""
@@ -172,17 +176,19 @@ class TestThematicMap:
 
 # Tests for _nice_round helper
 class TestNiceRound:
-
-    @pytest.mark.parametrize("value, expected", [
-        (3743, 2000),
-        (874, 500),
-        (47, 20),
-        (9, 5),
-        (1.5, 1),
-        (0.3, 0.2),
-        (15000, 10000),
-        (5500, 5000),
-    ])
+    @pytest.mark.parametrize(
+        "value, expected",
+        [
+            (3743, 2000),
+            (874, 500),
+            (47, 20),
+            (9, 5),
+            (1.5, 1),
+            (0.3, 0.2),
+            (15000, 10000),
+            (5500, 5000),
+        ],
+    )
     def test_nice_values(self, value, expected):
         assert _nice_round(value) == pytest.approx(expected)
 
@@ -196,6 +202,7 @@ class TestNiceRound:
 # ─────────────────────────────────────────────────────────────────────────────
 # Tests — interactive map
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class TestInteractiveMap:
     """Tests for generate_interactive_map."""
@@ -223,8 +230,13 @@ class TestInteractiveMap:
     def test_custom_cmap_and_range(self, ndvi_raster, output_dir):
         out = output_dir / "custom.html"
         result = generate_interactive_map(
-            ndvi_raster, "NDWI", out,
-            cmap="coolwarm", vmin=-0.5, vmax=0.5, opacity=0.5,
+            ndvi_raster,
+            "NDWI",
+            out,
+            cmap="coolwarm",
+            vmin=-0.5,
+            vmax=0.5,
+            opacity=0.5,
         )
         assert out.exists()
         assert result.index_name == "NDWI"

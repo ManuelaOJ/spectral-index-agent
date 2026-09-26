@@ -7,7 +7,6 @@ import pytest
 from spectral_agent.tracking.metrics import (
     PipelineMetrics,
     StepRecord,
-    StepTimer,
     get_metrics,
     track_step,
 )
@@ -65,21 +64,25 @@ class TestPipelineMetrics:
 
     def test_record_and_summary(self):
         pm = PipelineMetrics()
-        pm.record(StepRecord(
-            timestamp="2025-01-01T00:00:00Z",
-            step_name="scene_search",
-            duration_s=1.0,
-            status="success",
-            satellite="landsat",
-        ))
-        pm.record(StepRecord(
-            timestamp="2025-01-01T00:00:01Z",
-            step_name="scene_search",
-            duration_s=2.0,
-            status="failure",
-            satellite="sentinel",
-            error="API error",
-        ))
+        pm.record(
+            StepRecord(
+                timestamp="2025-01-01T00:00:00Z",
+                step_name="scene_search",
+                duration_s=1.0,
+                status="success",
+                satellite="landsat",
+            )
+        )
+        pm.record(
+            StepRecord(
+                timestamp="2025-01-01T00:00:01Z",
+                step_name="scene_search",
+                duration_s=2.0,
+                status="failure",
+                satellite="sentinel",
+                error="API error",
+            )
+        )
 
         s = pm.summary()
         assert s["total_steps"] == 2
@@ -96,12 +99,14 @@ class TestPipelineMetrics:
     def test_last_n(self):
         pm = PipelineMetrics()
         for i in range(5):
-            pm.record(StepRecord(
-                timestamp=f"2025-01-01T00:00:0{i}Z",
-                step_name=f"step_{i}",
-                duration_s=float(i),
-                status="success",
-            ))
+            pm.record(
+                StepRecord(
+                    timestamp=f"2025-01-01T00:00:0{i}Z",
+                    step_name=f"step_{i}",
+                    duration_s=float(i),
+                    status="success",
+                )
+            )
 
         last2 = pm.last_n(2)
         assert len(last2) == 2
@@ -110,12 +115,14 @@ class TestPipelineMetrics:
 
     def test_reset(self):
         pm = PipelineMetrics()
-        pm.record(StepRecord(
-            timestamp="2025-01-01T00:00:00Z",
-            step_name="t",
-            duration_s=0.1,
-            status="success",
-        ))
+        pm.record(
+            StepRecord(
+                timestamp="2025-01-01T00:00:00Z",
+                step_name="t",
+                duration_s=0.1,
+                status="success",
+            )
+        )
         assert len(pm.records) == 1
         pm.reset()
         assert len(pm.records) == 0
@@ -123,13 +130,15 @@ class TestPipelineMetrics:
     def test_persist_to_file(self, tmp_path):
         log_file = tmp_path / "metrics.jsonl"
         pm = PipelineMetrics(log_path=log_file)
-        pm.record(StepRecord(
-            timestamp="2025-01-01T00:00:00Z",
-            step_name="map_rendering",
-            duration_s=3.14,
-            status="success",
-            index_name="NDVI",
-        ))
+        pm.record(
+            StepRecord(
+                timestamp="2025-01-01T00:00:00Z",
+                step_name="map_rendering",
+                duration_s=3.14,
+                status="success",
+                index_name="NDVI",
+            )
+        )
         assert log_file.exists()
         content = log_file.read_text()
         assert '"NDVI"' in content
@@ -142,7 +151,9 @@ class TestTrackStepContextManager:
     def test_success_path(self):
         pm = PipelineMetrics()
         with track_step(
-            "test_step", satellite="landsat", metrics=pm,
+            "test_step",
+            satellite="landsat",
+            metrics=pm,
         ) as step:
             step.set_metadata(foo="bar")
 
@@ -167,7 +178,9 @@ class TestTrackStepContextManager:
     def test_index_name_tracking(self):
         pm = PipelineMetrics()
         with track_step(
-            "index_computation", index_name="NDWI", metrics=pm,
+            "index_computation",
+            index_name="NDWI",
+            metrics=pm,
         ):
             pass
 
@@ -181,6 +194,7 @@ class TestGetMetricsSingleton:
     def test_returns_same_instance(self):
         # Reset the module-level singleton for clean test
         import spectral_agent.tracking.metrics as mod
+
         mod._metrics = None
 
         m1 = get_metrics(log_path=None)

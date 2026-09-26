@@ -12,10 +12,10 @@ Utilities:
 """
 
 from .extraction import extract_request
+from .geo_input import geometry_to_bbox, geometry_to_geojson, read_geometry_file
 from .normalization import normalize_request
-from .rules_engine import apply_rules
 from .request_builder import build_request
-from .geo_input import read_geometry_file, geometry_to_bbox, geometry_to_geojson
+from .rules_engine import apply_rules
 
 __all__ = [
     "extract_request",

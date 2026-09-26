@@ -29,8 +29,7 @@ from pathlib import Path
 from typing import Any
 
 import geopandas as gpd
-from pyproj import CRS
-from shapely.geometry import Polygon, MultiPolygon, mapping, shape
+from shapely.geometry import Polygon, mapping, shape
 from shapely.ops import unary_union
 
 from spectral_agent.schemas.spectral_request import ExtractedGeometry, GeometryType
@@ -86,8 +85,7 @@ def read_geometry_file(filepath: str | Path) -> ExtractedGeometry:
     ext = path.suffix.lower()
     if ext not in _SUPPORTED_EXTENSIONS:
         raise ValueError(
-            f"Unsupported file format '{ext}'. "
-            f"Supported: {sorted(_SUPPORTED_EXTENSIONS)}"
+            f"Unsupported file format '{ext}'. Supported: {sorted(_SUPPORTED_EXTENSIONS)}"
         )
 
     logger.info("Reading geometry from %s (format=%s)", path.name, ext)
@@ -152,7 +150,6 @@ def geometry_to_geojson(geom: ExtractedGeometry) -> dict[str, Any]:
 
 def geometry_area_km2(geom: ExtractedGeometry) -> float:
     """Approximate area in km² (uses equirectangular projection at centroid)."""
-    import math
 
     shp = shape(_to_geojson(geom))
     centroid = shp.centroid
@@ -169,12 +166,7 @@ def geometry_area_km2(geom: ExtractedGeometry) -> float:
 
 def _is_wgs84_range(minx: float, miny: float, maxx: float, maxy: float) -> bool:
     """Check if coordinates fall within valid WGS84 degree range."""
-    return (
-        -180 <= minx <= 180
-        and -180 <= maxx <= 180
-        and -90 <= miny <= 90
-        and -90 <= maxy <= 90
-    )
+    return -180 <= minx <= 180 and -180 <= maxx <= 180 and -90 <= miny <= 90 and -90 <= maxy <= 90
 
 
 def _ensure_crs(gdf: gpd.GeoDataFrame, path: Path) -> tuple[gpd.GeoDataFrame, str]:
@@ -204,8 +196,7 @@ def _ensure_crs(gdf: gpd.GeoDataFrame, path: Path) -> tuple[gpd.GeoDataFrame, st
     # Heuristic: if coordinates are in WGS84 range, assume EPSG:4326
     if _is_wgs84_range(minx, miny, maxx, maxy):
         logger.info(
-            "Coordinates in WGS84 range (lon: %.2f..%.2f, lat: %.2f..%.2f). "
-            "Assuming EPSG:4326.",
+            "Coordinates in WGS84 range (lon: %.2f..%.2f, lat: %.2f..%.2f). Assuming EPSG:4326.",
             minx,
             maxx,
             miny,
@@ -319,7 +310,7 @@ def _validate_wgs84_bounds(geom, filename: str) -> None:
         )
 
     logger.info(
-        "WGS84 validation passed for %s: " "lon=[%.6f, %.6f], lat=[%.6f, %.6f]",
+        "WGS84 validation passed for %s: lon=[%.6f, %.6f], lat=[%.6f, %.6f]",
         filename,
         minx,
         maxx,

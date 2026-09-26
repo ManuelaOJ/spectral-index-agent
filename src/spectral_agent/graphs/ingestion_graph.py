@@ -7,25 +7,18 @@ ingestion process: validation → search → download → finalization.
 The graph can be executed standalone or integrated into larger agent workflows.
 """
 
-import asyncio
 import logging
 from datetime import date, datetime
 from pathlib import Path
-from typing import Annotated, Any, Literal, TypedDict
+from typing import Literal, TypedDict
 
 from langgraph.graph import END, StateGraph
-from langgraph.graph.message import add_messages
-from pydantic import BaseModel, Field
 
 from spectral_agent.config import get_settings
-from spectral_agent.core.exceptions import ValidationError
 from spectral_agent.schemas.imagery import (
     BoundingBox,
     DownloadResult,
-    IngestionRequest,
     IngestionResponse,
-    SatelliteType,
-    SceneMetadata,
 )
 from spectral_agent.tools.ingestion.landsat import LandsatClient
 from spectral_agent.tools.ingestion.sentinel import SentinelClient
@@ -170,9 +163,7 @@ async def search_landsat(state: IngestionState) -> IngestionState:
         scenes = [
             {
                 "scene_id": s.scene_id,  # displayId (e.g. LC09_L2SP_...)
-                "entity_id": s.raw_metadata.get(
-                    "entityId", s.scene_id
-                ),  # For API calls
+                "entity_id": s.raw_metadata.get("entityId", s.scene_id),  # For API calls
                 "acquisition_date": s.acquisition_date.isoformat(),
                 "cloud_cover": s.cloud_cover,
                 "collection": s.collection,
@@ -289,9 +280,7 @@ async def download_landsat_scenes(state: IngestionState) -> IngestionState:
                         "scene_id": scene_id,
                         "success": True,
                         "file_path": str(file_path),
-                        "file_size_mb": round(
-                            file_path.stat().st_size / (1024 * 1024), 2
-                        ),
+                        "file_size_mb": round(file_path.stat().st_size / (1024 * 1024), 2),
                     }
                 )
 
@@ -364,9 +353,7 @@ async def download_sentinel_scenes(state: IngestionState) -> IngestionState:
                         "scene_id": scene_id,
                         "success": True,
                         "file_path": str(file_path),
-                        "file_size_mb": round(
-                            file_path.stat().st_size / (1024 * 1024), 2
-                        ),
+                        "file_size_mb": round(file_path.stat().st_size / (1024 * 1024), 2),
                         "indices": indices,
                     }
                 )
@@ -407,14 +394,12 @@ async def finalize(state: IngestionState) -> IngestionState:
     if success:
         message = f"Successfully downloaded {len(successful)} scenes ({total_size_mb:.2f} MB total)"
     elif has_critical_errors:
-        message = f"Workflow failed due to validation errors"
+        message = "Workflow failed due to validation errors"
     else:
         message = f"No scenes were downloaded. {len(failed)} downloads failed."
 
     completed_at = datetime.now()
-    started_at = datetime.fromisoformat(
-        state.get("started_at", completed_at.isoformat())
-    )
+    started_at = datetime.fromisoformat(state.get("started_at", completed_at.isoformat()))
     duration = (completed_at - started_at).total_seconds()
 
     return {
@@ -634,7 +619,7 @@ async def run_ingestion_workflow(
     # Execute the workflow
     final_state = await graph.ainvoke(initial_state)
 
-    logger.info("Workflow completed: %s", final_state.get('message'))
+    logger.info("Workflow completed: %s", final_state.get("message"))
 
     # Convert to response model
     return IngestionResponse(
@@ -646,9 +631,7 @@ async def run_ingestion_workflow(
                 success=d.get("success", False),
                 file_path=Path(d["file_path"]) if d.get("file_path") else None,
                 file_size_bytes=(
-                    int(d.get("file_size_mb", 0) * 1024 * 1024)
-                    if d.get("file_size_mb")
-                    else None
+                    int(d.get("file_size_mb", 0) * 1024 * 1024) if d.get("file_size_mb") else None
                 ),
                 error_message=d.get("error"),
             )
@@ -660,9 +643,7 @@ async def run_ingestion_workflow(
                 success=d.get("success", False),
                 file_path=Path(d["file_path"]) if d.get("file_path") else None,
                 file_size_bytes=(
-                    int(d.get("file_size_mb", 0) * 1024 * 1024)
-                    if d.get("file_size_mb")
-                    else None
+                    int(d.get("file_size_mb", 0) * 1024 * 1024) if d.get("file_size_mb") else None
                 ),
                 error_message=d.get("error"),
             )

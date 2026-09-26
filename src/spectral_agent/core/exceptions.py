@@ -34,9 +34,7 @@ class AuthenticationError(SpectralAgentError):
 class DownloadError(SpectralAgentError):
     """Error downloading data from external source."""
 
-    def __init__(
-        self, message: str, scene_id: str | None = None, details: dict | None = None
-    ):
+    def __init__(self, message: str, scene_id: str | None = None, details: dict | None = None):
         self.scene_id = scene_id
         super().__init__(message, details)
 
@@ -44,9 +42,7 @@ class DownloadError(SpectralAgentError):
 class SpectralValidationError(SpectralAgentError):
     """Input validation failed."""
 
-    def __init__(
-        self, message: str, field: str | None = None, details: dict | None = None
-    ):
+    def __init__(self, message: str, field: str | None = None, details: dict | None = None):
         self.field = field
         super().__init__(message, details)
 
@@ -58,9 +54,7 @@ ValidationError = SpectralValidationError
 class RateLimitError(SpectralAgentError):
     """API rate limit exceeded."""
 
-    def __init__(
-        self, message: str, retry_after: int | None = None, details: dict | None = None
-    ):
+    def __init__(self, message: str, retry_after: int | None = None, details: dict | None = None):
         self.retry_after = retry_after
         super().__init__(message, details)
 

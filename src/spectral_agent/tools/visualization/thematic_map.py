@@ -20,16 +20,15 @@ import io
 import logging
 import re
 import xml.etree.ElementTree as ET
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
 
 import matplotlib
 
 matplotlib.use("Agg")  # headless — must come before pyplot import
 
-import matplotlib.pyplot as plt
 import matplotlib.patheffects as pe
+import matplotlib.pyplot as plt
 import numpy as np
 import rasterio
 from matplotlib.colors import Normalize
@@ -170,16 +169,8 @@ def generate_thematic_map(
     cmap.set_bad(color=config.nodata_color)
 
     valid = data[~np.isnan(data)]
-    vmin = (
-        config.vmin
-        if config.vmin is not None
-        else (float(valid.min()) if valid.size else -1.0)
-    )
-    vmax = (
-        config.vmax
-        if config.vmax is not None
-        else (float(valid.max()) if valid.size else 1.0)
-    )
+    vmin = config.vmin if config.vmin is not None else (float(valid.min()) if valid.size else -1.0)
+    vmax = config.vmax if config.vmax is not None else (float(valid.max()) if valid.size else 1.0)
 
     title = config.title or f"{name} — {INDEX_FULL_NAMES.get(name, index_name)}"
     subtitle = config.subtitle or ""
@@ -337,8 +328,9 @@ def _setup_coordinate_grid(
     * Bottom / Top   → horizontal labels (Easting / Longitude)
     * Left (ascending 90°) / Right (descending 270°) → Northing / Latitude
     """
-    import matplotlib.ticker as mticker
     import math as _m
+
+    import matplotlib.ticker as mticker
 
     left, right, bottom, top = extent
     dx = right - left
@@ -815,8 +807,9 @@ def _add_scale_bar(
         Approximate centre latitude — used only for geographic CRS to
         convert degrees to metres.
     """
-    from matplotlib.patches import Rectangle
     import math as _m
+
+    from matplotlib.patches import Rectangle
 
     # ── Determine map width in metres ───────────────────────────────────
     if is_projected:

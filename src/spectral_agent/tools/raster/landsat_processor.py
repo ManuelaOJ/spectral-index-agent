@@ -25,10 +25,8 @@ import tarfile
 from pathlib import Path
 from typing import Any
 
-import numpy as np
 import rasterio
 from rasterio.mask import mask as rasterio_mask
-from rasterio.windows import from_bounds
 from shapely.geometry import box, mapping
 
 from spectral_agent.schemas.imagery import BoundingBox
@@ -37,6 +35,7 @@ from spectral_agent.schemas.spectral_request import (
     LANDSAT_457_INDEX_BANDS,
     LandsatSensor,
 )
+
 from .band_cache import BandCache
 
 logger = logging.getLogger(__name__)
@@ -124,9 +123,7 @@ class LandsatProcessor:
         if scene_dir.exists() and not force:
             tifs = list(scene_dir.glob("*.TIF")) + list(scene_dir.glob("*.tif"))
             if tifs:
-                logger.info(
-                    "Scene already extracted (%d TIFs): %s", len(tifs), scene_dir
-                )
+                logger.info("Scene already extracted (%d TIFs): %s", len(tifs), scene_dir)
                 return scene_dir
 
         scene_dir.mkdir(parents=True, exist_ok=True)
@@ -138,9 +135,7 @@ class LandsatProcessor:
             for member in tf.getmembers():
                 member_path = Path(scene_dir / member.name).resolve()
                 if not str(member_path).startswith(str(scene_dir.resolve())):
-                    raise tarfile.TarError(
-                        f"Path traversal detected in tar member: {member.name}"
-                    )
+                    raise tarfile.TarError(f"Path traversal detected in tar member: {member.name}")
             tf.extractall(path=scene_dir, filter="data")
 
         tifs = list(scene_dir.glob("*.TIF")) + list(scene_dir.glob("*.tif"))
@@ -226,9 +221,7 @@ class LandsatProcessor:
             if str(src.crs) != "EPSG:4326":
                 from pyproj import Transformer
 
-                transformer = Transformer.from_crs(
-                    "EPSG:4326", src.crs, always_xy=True
-                )
+                transformer = Transformer.from_crs("EPSG:4326", src.crs, always_xy=True)
                 bbox_geom_native = _transform_geom(bbox_geom_wgs84, transformer)
             else:
                 bbox_geom_native = bbox_geom_wgs84
@@ -400,9 +393,7 @@ class LandsatProcessor:
         """
         results: dict[str, dict[str, Path]] = {}
         for idx in index_names:
-            results[idx] = self.crop_bands_for_index(
-                scene_id, scene_dir, idx, sensor, bbox
-            )
+            results[idx] = self.crop_bands_for_index(scene_id, scene_dir, idx, sensor, bbox)
         return results
 
     # ── Convenience ────────────────────────────────────────────────────

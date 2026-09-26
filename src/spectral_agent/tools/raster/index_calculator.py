@@ -32,9 +32,9 @@ written as ``NaN`` in the output.
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable
 
 import numpy as np
 import rasterio
@@ -91,11 +91,7 @@ def _ndvi(b: dict[str, np.ndarray]) -> np.ndarray:
 
 def _evi(b: dict[str, np.ndarray]) -> np.ndarray:
     """Enhanced Vegetation Index."""
-    return (
-        2.5
-        * (b["NIR"] - b["RED"])
-        / (b["NIR"] + 6.0 * b["RED"] - 7.5 * b["BLUE"] + 1.0)
-    )
+    return 2.5 * (b["NIR"] - b["RED"]) / (b["NIR"] + 6.0 * b["RED"] - 7.5 * b["BLUE"] + 1.0)
 
 
 def _savi(b: dict[str, np.ndarray]) -> np.ndarray:
@@ -198,9 +194,7 @@ def compute_index(
     """
     name = index_name.upper()
     if name not in INDEX_FORMULAS:
-        raise ValueError(
-            f"Unknown index '{index_name}'. Supported: {list_supported_indices()}"
-        )
+        raise ValueError(f"Unknown index '{index_name}'. Supported: {list_supported_indices()}")
 
     formula = INDEX_FORMULAS[name]
 
@@ -211,8 +205,7 @@ def compute_index(
         result = formula(role_arrays)
     except KeyError as exc:
         raise ValueError(
-            f"Missing band role {exc} for index '{name}'. "
-            f"Provided roles: {sorted(role_arrays)}"
+            f"Missing band role {exc} for index '{name}'. Provided roles: {sorted(role_arrays)}"
         ) from exc
 
     # Apply nodata mask
@@ -264,9 +257,7 @@ def compute_and_save(
     """
     name = index_name.upper()
     if name not in INDEX_FORMULAS:
-        raise ValueError(
-            f"Unknown index '{index_name}'. Supported: {list_supported_indices()}"
-        )
+        raise ValueError(f"Unknown index '{index_name}'. Supported: {list_supported_indices()}")
 
     # Resolve role → band_name mapping
     band_table = _get_band_table(sensor)

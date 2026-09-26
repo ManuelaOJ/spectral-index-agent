@@ -15,7 +15,6 @@ from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import InjectedToolArg, tool
 from pydantic import BaseModel, Field
 
-from spectral_agent.config import get_settings
 from spectral_agent.schemas.imagery import BoundingBox
 from spectral_agent.tools.ingestion.landsat import LandsatClient
 from spectral_agent.tools.ingestion.sentinel import SentinelClient
@@ -23,8 +22,8 @@ from spectral_agent.tracking.debug_log import get_debug_logger
 from spectral_agent.tracking.metrics import track_step
 from spectral_agent.utils.session_paths import (
     get_session_id,
-    session_raw_dir,
     session_processed_dir,
+    session_raw_dir,
 )
 
 logger = logging.getLogger(__name__)
@@ -96,9 +95,7 @@ class SearchImageryInput(BaseModel):
 class DownloadSceneInput(BaseModel):
     """Input schema for scene download."""
 
-    scene_id: str = Field(
-        ..., description="Unique scene identifier from search results"
-    )
+    scene_id: str = Field(..., description="Unique scene identifier from search results")
     satellite: Literal["landsat", "sentinel"] = Field(
         ..., description="Satellite type: 'landsat' or 'sentinel'"
     )
@@ -138,25 +135,14 @@ class SentinelIndexInput(BaseModel):
     index_names: list[str] = Field(
         ...,
         description=(
-            "Spectral indices to compute server-side. "
-            "Supported: NDVI, EVI, SAVI, NDWI, NBR, NDBI"
+            "Spectral indices to compute server-side. Supported: NDVI, EVI, SAVI, NDWI, NBR, NDBI"
         ),
     )
-    west: float = Field(
-        ..., ge=-180, le=180, description="Western boundary longitude (WGS84)"
-    )
-    south: float = Field(
-        ..., ge=-90, le=90, description="Southern boundary latitude (WGS84)"
-    )
-    east: float = Field(
-        ..., ge=-180, le=180, description="Eastern boundary longitude (WGS84)"
-    )
-    north: float = Field(
-        ..., ge=-90, le=90, description="Northern boundary latitude (WGS84)"
-    )
-    resolution: int = Field(
-        default=10, description="Output resolution in meters (default 10)"
-    )
+    west: float = Field(..., ge=-180, le=180, description="Western boundary longitude (WGS84)")
+    south: float = Field(..., ge=-90, le=90, description="Southern boundary latitude (WGS84)")
+    east: float = Field(..., ge=-180, le=180, description="Eastern boundary longitude (WGS84)")
+    north: float = Field(..., ge=-90, le=90, description="Northern boundary latitude (WGS84)")
+    resolution: int = Field(default=10, description="Output resolution in meters (default 10)")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -233,9 +219,7 @@ async def search_landsat_tool(
             }
 
         except Exception as e:
-            logger.error(
-                "Landsat search failed: %s", e, exc_info=True
-            )
+            logger.error("Landsat search failed: %s", e, exc_info=True)
             step.mark_failure(str(e))
             return {
                 "success": False,
@@ -276,7 +260,13 @@ async def download_landsat_tool(
     logger.info(
         "download_landsat_tool called: scene_id=%s, entity_id=%s, "
         "collection=%s, bbox=(%s,%s,%s,%s)",
-        scene_id, entity_id, collection, west, south, east, north,
+        scene_id,
+        entity_id,
+        collection,
+        west,
+        south,
+        east,
+        north,
     )
 
     # Use entity_id for the actual download; fall back to scene_id
@@ -303,9 +293,7 @@ async def download_landsat_tool(
             }
 
         except Exception as e:
-            logger.error(
-                "Landsat download failed: %s", e, exc_info=True
-            )
+            logger.error("Landsat download failed: %s", e, exc_info=True)
             step.mark_failure(str(e))
             return {
                 "success": False,
@@ -425,12 +413,7 @@ async def download_sentinel_tool(
 
     # Sentinel downloads require a bbox
     bbox = None
-    if (
-        west is not None
-        and south is not None
-        and east is not None
-        and north is not None
-    ):
+    if west is not None and south is not None and east is not None and north is not None:
         bbox = BoundingBox(west=west, south=south, east=east, north=north)
 
     with track_step("scene_download", satellite="sentinel", session_id=sid) as step:
@@ -527,7 +510,6 @@ async def download_sentinel_index_tool(
             # ── Debug logging for Sentinel indices ──────────────────
             from spectral_agent.tools.indices.spectral_indices import (
                 SPECTRAL_INDICES,
-                generate_evalscript,
             )
 
             dbg = get_debug_logger()
@@ -622,8 +604,7 @@ async def search_satellite_imagery_tool(
             "total_found": 0,
             "scenes": [],
             "errors": [
-                "'satellites' parameter is required. "
-                "Ask the user: 'Landsat or Sentinel-2?'"
+                "'satellites' parameter is required. Ask the user: 'Landsat or Sentinel-2?'"
             ],
         }
     sid = get_session_id(config)

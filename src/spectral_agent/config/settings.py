@@ -61,19 +61,13 @@ class Settings(BaseSettings):
     # ─────────────────────────────────────────────────────────────────
     # Copernicus Data Space (Sentinel)
     # ─────────────────────────────────────────────────────────────────
-    copernicus_client_id: str = Field(
-        default="", description="Copernicus OAuth client ID"
-    )
-    copernicus_client_secret: str = Field(
-        default="", description="Copernicus OAuth client secret"
-    )
+    copernicus_client_id: str = Field(default="", description="Copernicus OAuth client ID")
+    copernicus_client_secret: str = Field(default="", description="Copernicus OAuth client secret")
     copernicus_token_url: str = (
         "https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token"
     )
     # Sentinel Hub APIs (for searching and processing)
-    sentinel_hub_catalog_url: str = (
-        "https://sh.dataspace.copernicus.eu/api/v1/catalog/1.0.0"
-    )
+    sentinel_hub_catalog_url: str = "https://sh.dataspace.copernicus.eu/api/v1/catalog/1.0.0"
     sentinel_hub_process_url: str = "https://sh.dataspace.copernicus.eu/api/v1/process"
     # OData API (for direct product download)
     copernicus_catalog_url: str = "https://catalogue.dataspace.copernicus.eu/odata/v1"
@@ -101,27 +95,17 @@ class Settings(BaseSettings):
     request_timeout: int = Field(default=300, description="HTTP timeout in seconds")
     max_retries: int = Field(default=3, description="Max retry attempts for API calls")
     retry_delay: float = Field(default=1.0, description="Base delay between retries")
-    download_chunk_size: int = Field(
-        default=8192, description="Chunk size for downloads"
-    )
-    max_concurrent_downloads: int = Field(
-        default=4, description="Max parallel downloads"
-    )
+    download_chunk_size: int = Field(default=8192, description="Chunk size for downloads")
+    max_concurrent_downloads: int = Field(default=4, description="Max parallel downloads")
 
     # ─────────────────────────────────────────────────────────────────
     # Observability
     # ─────────────────────────────────────────────────────────────────
-    langsmith_api_key: str = Field(
-        default="", description="LangSmith API key for tracing"
-    )
-    langsmith_project: str = Field(
-        default="spectral-agent", description="LangSmith project name"
-    )
+    langsmith_api_key: str = Field(default="", description="LangSmith API key for tracing")
+    langsmith_project: str = Field(default="spectral-agent", description="LangSmith project name")
     enable_tracing: bool = Field(default=False, description="Enable LangSmith tracing")
 
-    @field_validator(
-        "data_dir", "raw_data_dir", "processed_data_dir", "cache_dir", mode="after"
-    )
+    @field_validator("data_dir", "raw_data_dir", "processed_data_dir", "cache_dir", mode="after")
     @classmethod
     def ensure_directories_exist(cls, v: Path) -> Path:
         """Create directories if they don't exist."""
@@ -151,7 +135,7 @@ class Settings(BaseSettings):
         return bool(self.copernicus_client_id and self.copernicus_client_secret)
 
 
-@lru_cache()
+@lru_cache
 def get_settings() -> Settings:
     """
     Get cached settings instance.

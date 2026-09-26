@@ -2,15 +2,15 @@
 Unit tests for imagery schemas.
 """
 
-import pytest
 from datetime import date, datetime
+
+import pytest
 
 from spectral_agent.schemas.imagery import (
     BoundingBox,
-    SceneMetadata,
-    SearchResult,
     IngestionRequest,
     SatelliteType,
+    SceneMetadata,
 )
 
 

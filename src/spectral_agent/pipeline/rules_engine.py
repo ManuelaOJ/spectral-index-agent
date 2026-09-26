@@ -13,6 +13,9 @@ import logging
 from datetime import date
 
 from spectral_agent.schemas.spectral_request import (
+    SENSOR_OPERATION_WINDOWS,
+    SENSOR_PRIORITY,
+    SENSOR_TO_COLLECTION,
     CloudCoverStrategy,
     DateRange,
     LandsatSensor,
@@ -20,9 +23,6 @@ from spectral_agent.schemas.spectral_request import (
     SceneSelectionPlan,
     SelectionRule,
     SensorSelection,
-    SENSOR_OPERATION_WINDOWS,
-    SENSOR_PRIORITY,
-    SENSOR_TO_COLLECTION,
 )
 
 logger = logging.getLogger(__name__)
@@ -117,9 +117,7 @@ def _select_sensors_by_priority(dr: DateRange) -> list[SensorSelection]:
     return result
 
 
-def _validate_user_sensor(
-    sensor: LandsatSensor, dr: DateRange
-) -> list[SensorSelection]:
+def _validate_user_sensor(sensor: LandsatSensor, dr: DateRange) -> list[SensorSelection]:
     """Validate that the user-requested sensor covers the date range."""
     win_start, win_end = SENSOR_OPERATION_WINDOWS[sensor]
 

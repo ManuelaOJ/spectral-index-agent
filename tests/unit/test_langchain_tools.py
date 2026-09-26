@@ -6,32 +6,31 @@ No real API keys, no real satellite imagery — everything is mocked
 or uses tiny GeoTIFFs in tmp directories.
 """
 
-import json
+import tarfile
+from pathlib import Path
+from unittest.mock import patch
+
 import numpy as np
 import pytest
 import rasterio
-import tarfile
-from pathlib import Path
-from unittest.mock import patch, MagicMock
 from rasterio.crs import CRS
 from rasterio.transform import from_bounds
 
 from spectral_agent.tools import (
-    crop_landsat_bands_tool,
     compute_spectral_index_tool,
+    crop_landsat_bands_tool,
     generate_thematic_map_tool,
-    list_cached_bands_tool,
-    list_available_indices_tool,
+    get_all_tools,
     get_ingestion_tools,
     get_raster_tools,
-    get_all_tools,
-)
-from spectral_agent.tools.raster.index_calculator import (
-    LANDSAT_C2_L2_SCALE,
-    LANDSAT_C2_L2_OFFSET,
+    list_available_indices_tool,
+    list_cached_bands_tool,
 )
 from spectral_agent.tools.raster.band_cache import BandCache
-
+from spectral_agent.tools.raster.index_calculator import (
+    LANDSAT_C2_L2_OFFSET,
+    LANDSAT_C2_L2_SCALE,
+)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Helpers
@@ -143,7 +142,6 @@ def fake_settings(tmp_path):
 
 
 class TestListAvailableIndicesTool:
-
     def test_returns_all_six(self):
         result = list_available_indices_tool.invoke({})
         assert result["success"] is True
@@ -170,26 +168,21 @@ class TestListAvailableIndicesTool:
 
 
 class TestCropLandsatBandsTool:
-
-    def test_crop_ndvi(self, tmp_path, fake_settings):
+    def test_crop_ndvi(self, tmp_path):
         tar_path = make_scene_tar(tmp_path, "LC09_CROP_TEST")
 
-        with patch(
-            "spectral_agent.tools.raster.lc_tools.get_settings",
-            return_value=fake_settings,
-        ):
-            result = crop_landsat_bands_tool.invoke(
-                {
-                    "scene_id": "LC09_CROP_TEST",
-                    "tar_path": str(tar_path),
-                    "index_names": ["NDVI"],
-                    "sensor": "Landsat 9",
-                    "west": WGS84_WEST,
-                    "south": WGS84_SOUTH,
-                    "east": WGS84_EAST,
-                    "north": WGS84_NORTH,
-                }
-            )
+        result = crop_landsat_bands_tool.invoke(
+            {
+                "scene_id": "LC09_CROP_TEST",
+                "tar_path": str(tar_path),
+                "index_names": ["NDVI"],
+                "sensor": "Landsat 9",
+                "west": WGS84_WEST,
+                "south": WGS84_SOUTH,
+                "east": WGS84_EAST,
+                "north": WGS84_NORTH,
+            }
+        )
 
         assert result["success"] is True
         assert "NDVI" in result["indices_prepared"]
@@ -197,48 +190,40 @@ class TestCropLandsatBandsTool:
         for path_str in result["bands_cropped"].values():
             assert Path(path_str).exists()
 
-    def test_crop_multiple_indices(self, tmp_path, fake_settings):
+    def test_crop_multiple_indices(self, tmp_path):
         tar_path = make_scene_tar(tmp_path, "LC09_MULTI")
 
-        with patch(
-            "spectral_agent.tools.raster.lc_tools.get_settings",
-            return_value=fake_settings,
-        ):
-            result = crop_landsat_bands_tool.invoke(
-                {
-                    "scene_id": "LC09_MULTI",
-                    "tar_path": str(tar_path),
-                    "index_names": ["NDVI", "NDWI", "NBR"],
-                    "sensor": "Landsat 9",
-                    "west": WGS84_WEST,
-                    "south": WGS84_SOUTH,
-                    "east": WGS84_EAST,
-                    "north": WGS84_NORTH,
-                }
-            )
+        result = crop_landsat_bands_tool.invoke(
+            {
+                "scene_id": "LC09_MULTI",
+                "tar_path": str(tar_path),
+                "index_names": ["NDVI", "NDWI", "NBR"],
+                "sensor": "Landsat 9",
+                "west": WGS84_WEST,
+                "south": WGS84_SOUTH,
+                "east": WGS84_EAST,
+                "north": WGS84_NORTH,
+            }
+        )
 
         assert result["success"] is True
         assert len(result["indices_prepared"]) == 3
 
-    def test_bad_sensor_returns_error(self, tmp_path, fake_settings):
+    def test_bad_sensor_returns_error(self, tmp_path):
         tar_path = make_scene_tar(tmp_path, "LC09_BAD")
 
-        with patch(
-            "spectral_agent.tools.raster.lc_tools.get_settings",
-            return_value=fake_settings,
-        ):
-            result = crop_landsat_bands_tool.invoke(
-                {
-                    "scene_id": "LC09_BAD",
-                    "tar_path": str(tar_path),
-                    "index_names": ["NDVI"],
-                    "sensor": "InvalidSensor",
-                    "west": WGS84_WEST,
-                    "south": WGS84_SOUTH,
-                    "east": WGS84_EAST,
-                    "north": WGS84_NORTH,
-                }
-            )
+        result = crop_landsat_bands_tool.invoke(
+            {
+                "scene_id": "LC09_BAD",
+                "tar_path": str(tar_path),
+                "index_names": ["NDVI"],
+                "sensor": "InvalidSensor",
+                "west": WGS84_WEST,
+                "south": WGS84_SOUTH,
+                "east": WGS84_EAST,
+                "north": WGS84_NORTH,
+            }
+        )
 
         assert result["success"] is False
         assert "error" in result
@@ -250,31 +235,22 @@ class TestCropLandsatBandsTool:
 
 
 class TestComputeSpectralIndexTool:
-
-    def test_compute_ndvi(self, tmp_path, fake_settings):
+    def test_compute_ndvi(self, tmp_path):
         # Create cropped band files
         bands_dir = tmp_path / "bands"
         band_paths = {
-            "SR_B4": str(
-                write_band_tif(bands_dir / "SR_B4.tif", reflectance_to_dn(0.10))
-            ),
-            "SR_B5": str(
-                write_band_tif(bands_dir / "SR_B5.tif", reflectance_to_dn(0.50))
-            ),
+            "SR_B4": str(write_band_tif(bands_dir / "SR_B4.tif", reflectance_to_dn(0.10))),
+            "SR_B5": str(write_band_tif(bands_dir / "SR_B5.tif", reflectance_to_dn(0.50))),
         }
 
-        with patch(
-            "spectral_agent.tools.raster.lc_tools.get_settings",
-            return_value=fake_settings,
-        ):
-            result = compute_spectral_index_tool.invoke(
-                {
-                    "scene_id": "TEST_SCENE",
-                    "index_names": ["NDVI"],
-                    "band_paths": band_paths,
-                    "sensor": "Landsat 9",
-                }
-            )
+        result = compute_spectral_index_tool.invoke(
+            {
+                "scene_id": "TEST_SCENE",
+                "index_names": ["NDVI"],
+                "band_paths": band_paths,
+                "sensor": "Landsat 9",
+            }
+        )
 
         assert result["success"] is True
         assert result["indices_computed"] == ["NDVI"]
@@ -282,53 +258,39 @@ class TestComputeSpectralIndexTool:
         assert ndvi_info["value_mean"] > 0.5  # healthy vegetation
         assert Path(ndvi_info["output_path"]).exists()
 
-    def test_compute_multiple(self, tmp_path, fake_settings):
+    def test_compute_multiple(self, tmp_path):
         bands_dir = tmp_path / "bands"
         band_paths = {
-            "SR_B4": str(
-                write_band_tif(bands_dir / "SR_B4.tif", reflectance_to_dn(0.10))
-            ),
-            "SR_B5": str(
-                write_band_tif(bands_dir / "SR_B5.tif", reflectance_to_dn(0.50))
-            ),
+            "SR_B4": str(write_band_tif(bands_dir / "SR_B4.tif", reflectance_to_dn(0.10))),
+            "SR_B5": str(write_band_tif(bands_dir / "SR_B5.tif", reflectance_to_dn(0.50))),
         }
 
-        with patch(
-            "spectral_agent.tools.raster.lc_tools.get_settings",
-            return_value=fake_settings,
-        ):
-            result = compute_spectral_index_tool.invoke(
-                {
-                    "scene_id": "TEST_SCENE",
-                    "index_names": ["NDVI", "SAVI"],
-                    "band_paths": band_paths,
-                    "sensor": "Landsat 9",
-                }
-            )
+        result = compute_spectral_index_tool.invoke(
+            {
+                "scene_id": "TEST_SCENE",
+                "index_names": ["NDVI", "SAVI"],
+                "band_paths": band_paths,
+                "sensor": "Landsat 9",
+            }
+        )
 
         assert result["success"] is True
         assert len(result["results"]) == 2
 
-    def test_missing_band_returns_error(self, tmp_path, fake_settings):
+    def test_missing_band_returns_error(self, tmp_path):
         bands_dir = tmp_path / "bands"
         band_paths = {
-            "SR_B5": str(
-                write_band_tif(bands_dir / "SR_B5.tif", reflectance_to_dn(0.50))
-            ),
+            "SR_B5": str(write_band_tif(bands_dir / "SR_B5.tif", reflectance_to_dn(0.50))),
         }
 
-        with patch(
-            "spectral_agent.tools.raster.lc_tools.get_settings",
-            return_value=fake_settings,
-        ):
-            result = compute_spectral_index_tool.invoke(
-                {
-                    "scene_id": "TEST_SCENE",
-                    "index_names": ["NDVI"],
-                    "band_paths": band_paths,
-                    "sensor": "Landsat 9",
-                }
-            )
+        result = compute_spectral_index_tool.invoke(
+            {
+                "scene_id": "TEST_SCENE",
+                "index_names": ["NDVI"],
+                "band_paths": band_paths,
+                "sensor": "Landsat 9",
+            }
+        )
 
         assert result["success"] is False
 
@@ -375,7 +337,6 @@ class TestComputeSpectralIndexTool:
 
 
 class TestGenerateThematicMapTool:
-
     def test_both_maps(self, tmp_path):
         idx_path = write_index_tif(tmp_path / "scene" / "NDVI.tif")
 
@@ -444,7 +405,6 @@ class TestGenerateThematicMapTool:
 
 
 class TestListCachedBandsTool:
-
     def test_empty_cache(self, tmp_path, fake_settings):
         empty_dir = tmp_path / "processed" / "default" / "landsat"
         empty_dir.mkdir(parents=True, exist_ok=True)
@@ -477,12 +437,9 @@ class TestListCachedBandsTool:
 
 
 class TestToolRegistries:
-
     def test_ingestion_tools_count(self):
         tools = get_ingestion_tools()
-        assert (
-            len(tools) == 6
-        )  # search/download landsat/sentinel + sentinel_index + multi_search
+        assert len(tools) == 6  # search/download landsat/sentinel + sentinel_index + multi_search
 
     def test_raster_tools_count(self):
         tools = get_raster_tools()

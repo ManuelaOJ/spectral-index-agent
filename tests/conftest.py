@@ -3,10 +3,10 @@ Pytest configuration and shared fixtures.
 """
 
 import os
-import sys
 
 # ── Fix TLS CA bundle (PostgreSQL 18 sets SSL_CERT_FILE to bad path) ─────────
 import certifi as _certifi
+
 os.environ.setdefault("SSL_CERT_FILE", _certifi.where())
 os.environ.setdefault("REQUESTS_CA_BUNDLE", _certifi.where())
 
@@ -17,21 +17,23 @@ os.environ.setdefault("REQUESTS_CA_BUNDLE", _certifi.where())
 # (without importing rasterio, which would trigger GDAL init with the
 # wrong PROJ_LIB) and force-set the env vars.
 import importlib.util as _ilu
+
 _rasterio_spec = _ilu.find_spec("rasterio")
 if _rasterio_spec and _rasterio_spec.submodule_search_locations:
     from pathlib import Path as _Path
+
     _proj_dir = _Path(_rasterio_spec.submodule_search_locations[0]) / "proj_data"
     if (_proj_dir / "proj.db").exists():
         os.environ["PROJ_DATA"] = str(_proj_dir)
         os.environ["PROJ_LIB"] = str(_proj_dir)
 del _ilu
 
-import pytest
-from datetime import date, datetime
+from datetime import date
 from pathlib import Path
 
-from spectral_agent.schemas.imagery import BoundingBox
+import pytest
 
+from spectral_agent.schemas.imagery import BoundingBox
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Fixtures

@@ -12,7 +12,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -105,9 +105,7 @@ class BandCache:
             return False
         return True
 
-    def get_band_path(
-        self, scene_id: str, band_name: str, bbox_hash: str
-    ) -> Path | None:
+    def get_band_path(self, scene_id: str, band_name: str, bbox_hash: str) -> Path | None:
         """Return the absolute path to a cached band, or None."""
         key = self._key(scene_id, band_name, bbox_hash)
         entry = self._entries.get(key)

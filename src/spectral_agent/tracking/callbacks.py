@@ -70,9 +70,7 @@ class CostTrackingHandler(BaseCallbackHandler):
 
             # Some providers nest differently
             input_tokens = usage.get("prompt_tokens") or usage.get("input_tokens") or 0
-            output_tokens = (
-                usage.get("completion_tokens") or usage.get("output_tokens") or 0
-            )
+            output_tokens = usage.get("completion_tokens") or usage.get("output_tokens") or 0
 
             # Determine model / provider from llm_output
             model = llm_output.get("model_name") or llm_output.get("model", "unknown")

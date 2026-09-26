@@ -9,10 +9,9 @@ from __future__ import annotations
 
 from datetime import date
 from enum import Enum
-from typing import Any, Literal
+from typing import Any
 
 from pydantic import BaseModel, Field, model_validator
-
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Enums
@@ -138,9 +137,7 @@ class ExtractedGeometry(BaseModel):
     source: str = Field(
         description="Where the geometry came from: 'text', 'kml', 'shapefile', 'geojson'"
     )
-    raw_input: str | None = Field(
-        default=None, description="Original text that was parsed"
-    )
+    raw_input: str | None = Field(default=None, description="Original text that was parsed")
 
 
 class ExtractionResult(BaseModel):
@@ -150,9 +147,7 @@ class ExtractionResult(BaseModel):
     Contains everything the LLM extracted from the user's natural language request.
     """
 
-    indices: list[str] = Field(
-        description="Spectral indices requested (e.g. ['NDVI', 'NBR'])"
-    )
+    indices: list[str] = Field(description="Spectral indices requested (e.g. ['NDVI', 'NBR'])")
     location_description: str | None = Field(
         default=None, description="Location as described by user (e.g. 'Medellin')"
     )
@@ -166,15 +161,9 @@ class ExtractionResult(BaseModel):
             "provided by the user. Processed during normalization."
         ),
     )
-    start_date: str | None = Field(
-        default=None, description="Start date (ISO format) or year"
-    )
-    end_date: str | None = Field(
-        default=None, description="End date (ISO format) or year"
-    )
-    year: int | None = Field(
-        default=None, description="Single year if only a year was specified"
-    )
+    start_date: str | None = Field(default=None, description="Start date (ISO format) or year")
+    end_date: str | None = Field(default=None, description="End date (ISO format) or year")
+    year: int | None = Field(default=None, description="Single year if only a year was specified")
     years: list[int] | None = Field(
         default=None, description="Multiple years if comparison requested"
     )
@@ -204,7 +193,7 @@ class DateRange(BaseModel):
     end: date
 
     @model_validator(mode="after")
-    def validate_order(self) -> "DateRange":
+    def validate_order(self) -> DateRange:
         if self.start > self.end:
             raise ValueError("start must be <= end")
         return self
@@ -218,9 +207,7 @@ class NormalizedRequest(BaseModel):
     """
 
     indices: list[SpectralIndexName]
-    date_ranges: list[DateRange] = Field(
-        description="One or more date ranges to process"
-    )
+    date_ranges: list[DateRange] = Field(description="One or more date ranges to process")
     geometry: ExtractedGeometry
     sensor_requested: LandsatSensor | None = Field(
         default=None, description="Sensor if explicitly requested"
@@ -254,9 +241,7 @@ class SceneSelectionPlan(BaseModel):
 
     indices: list[SpectralIndexName]
     date_range: DateRange
-    sensors: list[SensorSelection] = Field(
-        description="Sensors to query, in priority order"
-    )
+    sensors: list[SensorSelection] = Field(description="Sensors to query, in priority order")
     cloud_cover_strategy: CloudCoverStrategy
     cloud_cover_threshold: float | None = Field(
         default=None, description="Threshold if user-specified"
@@ -284,9 +269,7 @@ class SpectralIndexRequest(BaseModel):
     """
 
     indices: list[str]
-    date_range: dict[str, str] = Field(
-        description="{'start': 'YYYY-MM-DD', 'end': 'YYYY-MM-DD'}"
-    )
+    date_range: dict[str, str] = Field(description="{'start': 'YYYY-MM-DD', 'end': 'YYYY-MM-DD'}")
     sensor_selected: str
     collection: str
     cloud_cover_strategy: str

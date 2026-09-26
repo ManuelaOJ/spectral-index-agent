@@ -11,10 +11,8 @@ Tests cover:
 from __future__ import annotations
 
 import pytest
-from unittest.mock import MagicMock, patch
 
 from spectral_agent.memory.session_store import SessionState, SessionStore
-
 
 # ═════════════════════════════════════════════════════════════════════════════
 # SessionState
@@ -22,7 +20,6 @@ from spectral_agent.memory.session_store import SessionState, SessionStore
 
 
 class TestSessionState:
-
     def test_default_session_id_generated(self):
         s = SessionState()
         assert len(s.session_id) == 12
@@ -110,7 +107,6 @@ class TestSessionState:
 
 
 class TestSessionStore:
-
     def test_get_or_create_new(self):
         store = SessionStore()
         state = store.get_or_create("sess-1")
@@ -179,7 +175,6 @@ class TestSessionStore:
 
 
 class TestAgentGraph:
-
     @pytest.fixture()
     def _fake_settings(self, monkeypatch):
         """Patch get_settings so we don't need real API keys."""
@@ -193,7 +188,8 @@ class TestAgentGraph:
             cache_dir="data/cache",
         )
         monkeypatch.setattr(
-            "spectral_agent.graphs.agent_graph.get_settings", lambda: fake,
+            "spectral_agent.graphs.agent_graph.get_settings",
+            lambda: fake,
         )
 
     def test_build_agent_returns_compiled_graph(self, _fake_settings):
@@ -203,6 +199,7 @@ class TestAgentGraph:
         agent = build_agent(deps)
 
         from langgraph.graph.graph import CompiledGraph
+
         assert isinstance(agent, CompiledGraph)
 
     def test_build_agent_default_checkpointer(self, _fake_settings):
@@ -215,6 +212,7 @@ class TestAgentGraph:
 
     def test_build_agent_custom_checkpointer(self, _fake_settings):
         from langgraph.checkpoint.memory import MemorySaver
+
         from spectral_agent.graphs.agent_graph import AgentDeps, build_agent
 
         custom_cp = MemorySaver()
@@ -242,7 +240,6 @@ class TestAgentGraph:
 
 
 class TestSpectralAgentUpgrade:
-
     @pytest.fixture()
     def _fake_settings(self, monkeypatch):
         from spectral_agent.config.settings import Settings
@@ -255,7 +252,8 @@ class TestSpectralAgentUpgrade:
             cache_dir="data/cache",
         )
         monkeypatch.setattr(
-            "spectral_agent.agents.spectral_agent.get_settings", lambda: fake,
+            "spectral_agent.agents.spectral_agent.get_settings",
+            lambda: fake,
         )
 
     def test_create_agent_has_checkpointer_by_default(self, _fake_settings):
@@ -280,6 +278,7 @@ class TestSpectralAgentUpgrade:
 
     def test_create_agent_custom_checkpointer(self, _fake_settings):
         from langgraph.checkpoint.memory import MemorySaver
+
         from spectral_agent.agents.spectral_agent import (
             SpectralAgentConfig,
             create_spectral_agent,
@@ -292,4 +291,5 @@ class TestSpectralAgentUpgrade:
 
     def test_config_use_memory_default_true(self):
         from spectral_agent.agents.spectral_agent import SpectralAgentConfig
+
         assert SpectralAgentConfig().use_memory is True

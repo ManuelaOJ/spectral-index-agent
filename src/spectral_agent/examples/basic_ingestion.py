@@ -55,9 +55,7 @@ async def main():
         console.print("⚠️  Copernicus credentials not configured (Sentinel unavailable)")
 
     if not available_satellites:
-        console.print(
-            "\n[red]No satellite credentials configured. Please update .env file.[/red]"
-        )
+        console.print("\n[red]No satellite credentials configured. Please update .env file.[/red]")
         return
 
     # Define area of interest (San Francisco Bay Area)
@@ -68,7 +66,7 @@ async def main():
         north=38.0,
     )
 
-    console.print(f"\n[bold]Area of Interest:[/bold]")
+    console.print("\n[bold]Area of Interest:[/bold]")
     console.print(f"  West:  {bbox.west}°")
     console.print(f"  South: {bbox.south}°")
     console.print(f"  East:  {bbox.east}°")
@@ -78,13 +76,13 @@ async def main():
     start_date = date(2024, 1, 1)
     end_date = date(2024, 3, 31)
 
-    console.print(f"\n[bold]Date Range:[/bold]")
+    console.print("\n[bold]Date Range:[/bold]")
     console.print(f"  Start: {start_date}")
     console.print(f"  End:   {end_date}")
 
     console.print(f"\n[bold]Satellites:[/bold] {', '.join(available_satellites)}")
-    console.print(f"[bold]Max Cloud Cover:[/bold] 15%")
-    console.print(f"[bold]Max Scenes:[/bold] 2 per satellite")
+    console.print("[bold]Max Cloud Cover:[/bold] 15%")
+    console.print("[bold]Max Scenes:[/bold] 2 per satellite")
 
     # Run the workflow
     console.print("\n[yellow]Starting ingestion workflow...[/yellow]\n")
@@ -115,11 +113,7 @@ async def main():
 
             for dl in result.landsat_results:
                 status = "✅" if dl.success else "❌"
-                size = (
-                    f"{dl.file_size_bytes / (1024*1024):.2f}"
-                    if dl.file_size_bytes
-                    else "-"
-                )
+                size = f"{dl.file_size_bytes / (1024 * 1024):.2f}" if dl.file_size_bytes else "-"
                 path = (
                     str(dl.file_path)[:50] + "..."
                     if dl.file_path and len(str(dl.file_path)) > 50
@@ -139,11 +133,7 @@ async def main():
 
             for dl in result.sentinel_results:
                 status = "✅" if dl.success else "❌"
-                size = (
-                    f"{dl.file_size_bytes / (1024*1024):.2f}"
-                    if dl.file_size_bytes
-                    else "-"
-                )
+                size = f"{dl.file_size_bytes / (1024 * 1024):.2f}" if dl.file_size_bytes else "-"
                 path = (
                     str(dl.file_path)[:50] + "..."
                     if dl.file_path and len(str(dl.file_path)) > 50
@@ -154,13 +144,13 @@ async def main():
             console.print(table)
 
         # Summary
-        console.print(f"\n[bold]Summary:[/bold]")
+        console.print("\n[bold]Summary:[/bold]")
         console.print(f"  Total scenes found: {result.total_scenes_found}")
         console.print(f"  Downloaded: {result.total_scenes_downloaded}")
         console.print(f"  Duration: {result.total_download_time_seconds:.1f}s")
 
         if result.errors:
-            console.print(f"\n[yellow]Warnings/Errors:[/yellow]")
+            console.print("\n[yellow]Warnings/Errors:[/yellow]")
             for err in result.errors:
                 console.print(f"  - {err}")
 

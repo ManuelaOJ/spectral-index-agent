@@ -25,14 +25,14 @@ Usage
 
 from __future__ import annotations
 
-import json
 import logging
 import threading
 import time
+from collections.abc import Generator
 from contextlib import contextmanager
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Generator
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -210,9 +210,7 @@ class PipelineMetrics:
         # Convert sets → sorted lists for JSON serialisation
         for bucket in by_step.values():
             bucket["avg_s"] = (
-                round(bucket["total_s"] / bucket["calls"], 4)
-                if bucket["calls"]
-                else 0.0
+                round(bucket["total_s"] / bucket["calls"], 4) if bucket["calls"] else 0.0
             )
             bucket["satellites"] = sorted(bucket["satellites"])
             bucket["indices"] = sorted(bucket["indices"])
@@ -279,7 +277,7 @@ def track_step(
         session_id=session_id,
     )
     timer._start = time.perf_counter()
-    ts = datetime.now(timezone.utc).isoformat()
+    ts = datetime.now(UTC).isoformat()
 
     status = "success"
     error: str | None = None

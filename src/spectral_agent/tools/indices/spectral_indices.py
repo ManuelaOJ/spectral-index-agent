@@ -34,9 +34,7 @@ class SpectralIndex:
     description: str
     """What the index measures"""
 
-    category: Literal[
-        "vegetation", "water", "soil", "burn", "snow", "built_up", "other"
-    ]
+    category: Literal["vegetation", "water", "soil", "burn", "snow", "built_up", "other"]
     """Index category"""
 
     preamble: str = ""

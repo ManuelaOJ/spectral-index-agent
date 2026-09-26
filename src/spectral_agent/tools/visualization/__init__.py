@@ -9,16 +9,16 @@ This package provides:
   - ``InteractiveMapResult``      — metadata from interactive map generation
 """
 
+from .interactive_map import (
+    InteractiveMapResult,
+    generate_interactive_map,
+)
 from .thematic_map import (
-    generate_thematic_map,
-    MapConfig,
-    MapResult,
     INDEX_CMAPS,
     INDEX_FULL_NAMES,
-)
-from .interactive_map import (
-    generate_interactive_map,
-    InteractiveMapResult,
+    MapConfig,
+    MapResult,
+    generate_thematic_map,
 )
 
 __all__ = [

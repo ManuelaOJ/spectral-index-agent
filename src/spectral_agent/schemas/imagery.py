@@ -9,7 +9,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, Field, model_validator
 
 
 class SatelliteType(str, Enum):
@@ -97,9 +97,7 @@ class SceneMetadata(BaseModel):
     cloud_cover: float = Field(..., ge=0, le=100, description="Cloud cover percentage")
 
     # Spatial information
-    footprint: dict | None = Field(
-        default=None, description="Scene footprint as GeoJSON"
-    )
+    footprint: dict | None = Field(default=None, description="Scene footprint as GeoJSON")
     bbox: BoundingBox | None = Field(default=None, description="Scene bounding box")
 
     # Sensor details
@@ -115,9 +113,7 @@ class SceneMetadata(BaseModel):
     sun_elevation: float | None = Field(default=None, description="Sun elevation angle")
 
     # Raw provider metadata
-    raw_metadata: dict = Field(
-        default_factory=dict, description="Original provider metadata"
-    )
+    raw_metadata: dict = Field(default_factory=dict, description="Original provider metadata")
 
 
 class SearchResult(BaseModel):
@@ -125,14 +121,10 @@ class SearchResult(BaseModel):
 
     total_count: int = Field(..., ge=0, description="Total matching scenes")
     returned_count: int = Field(..., ge=0, description="Number of scenes returned")
-    scenes: list[SceneMetadata] = Field(
-        default_factory=list, description="Scene metadata list"
-    )
+    scenes: list[SceneMetadata] = Field(default_factory=list, description="Scene metadata list")
 
     # Query information
-    query_bbox: BoundingBox | None = Field(
-        default=None, description="Query bounding box"
-    )
+    query_bbox: BoundingBox | None = Field(default=None, description="Query bounding box")
     query_start_date: date | None = Field(default=None, description="Query start date")
     query_end_date: date | None = Field(default=None, description="Query end date")
 
@@ -147,12 +139,8 @@ class DownloadResult(BaseModel):
     success: bool = Field(..., description="Whether download succeeded")
     file_path: Path | None = Field(default=None, description="Path to downloaded file")
     file_size_bytes: int | None = Field(default=None, description="File size in bytes")
-    download_time_seconds: float | None = Field(
-        default=None, description="Download duration"
-    )
-    error_message: str | None = Field(
-        default=None, description="Error message if failed"
-    )
+    download_time_seconds: float | None = Field(default=None, description="Download duration")
+    error_message: str | None = Field(default=None, description="Error message if failed")
 
 
 class IngestionRequest(BaseModel):
@@ -169,7 +157,10 @@ class IngestionRequest(BaseModel):
         description="Satellites to query",
     )
     max_cloud_cover: float = Field(
-        default=100.0, ge=0, le=100, description="Maximum cloud cover percentage. Default 100 (no filter)."
+        default=100.0,
+        ge=0,
+        le=100,
+        description="Maximum cloud cover percentage. Default 100 (no filter).",
     )
     max_scenes_per_satellite: int | None = Field(
         default=None, ge=1, description="Maximum scenes per satellite. None = no limit."
@@ -203,14 +194,8 @@ class IngestionResponse(BaseModel):
     total_scenes_downloaded: int = Field(
         default=0, description="Total scenes successfully downloaded"
     )
-    total_download_size_mb: float = Field(
-        default=0.0, description="Total download size in MB"
-    )
-    total_download_time_seconds: float = Field(
-        default=0.0, description="Total download time"
-    )
+    total_download_size_mb: float = Field(default=0.0, description="Total download size in MB")
+    total_download_time_seconds: float = Field(default=0.0, description="Total download time")
 
     # Errors
-    errors: list[str] = Field(
-        default_factory=list, description="List of error messages"
-    )
+    errors: list[str] = Field(default_factory=list, description="List of error messages")

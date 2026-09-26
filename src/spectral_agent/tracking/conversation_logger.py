@@ -36,10 +36,9 @@ Usage
 
 from __future__ import annotations
 
-import json
 import logging
 import threading
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -62,9 +61,7 @@ class ConversationRecord(BaseModel):
 
     # ── Prompts ───────────────────────────────────────────────────────────
     user_prompt: str = Field(description="Original user input text")
-    enriched_prompt: str = Field(
-        description="Prompt after context injection (geometry, indices)"
-    )
+    enriched_prompt: str = Field(description="Prompt after context injection (geometry, indices)")
 
     # ── Response ──────────────────────────────────────────────────────────
     agent_response: str = Field(description="Final agent text response")
@@ -175,7 +172,7 @@ class ConversationLogger:
             turn_number = self._turn_counters[sid]
 
         rec = ConversationRecord(
-            timestamp=datetime.now(timezone.utc).isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
             session_id=sid,
             turn_number=turn_number,
             user_prompt=user_prompt,

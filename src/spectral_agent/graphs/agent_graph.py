@@ -40,12 +40,11 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any, Literal
 
-from langchain_core.language_models import BaseChatModel
-from langchain_core.messages import SystemMessage
-from langchain_core.tools import BaseTool
-from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
+from langchain_core.language_models import BaseChatModel
+from langchain_core.tools import BaseTool
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph.graph import CompiledGraph
 from langgraph.prebuilt import create_react_agent
@@ -53,8 +52,7 @@ from langgraph.prebuilt import create_react_agent
 from spectral_agent.config import get_settings
 from spectral_agent.memory.session_store import SessionStore
 from spectral_agent.tools._registry import get_all_tools
-from spectral_agent.tracking.callbacks import CostTrackingHandler, get_cost_handler
-from spectral_agent.tracking import get_tracker
+from spectral_agent.tracking.callbacks import get_cost_handler
 
 logger = logging.getLogger(__name__)
 
@@ -221,7 +219,7 @@ class AgentDeps:
     checkpointer: MemorySaver | None = None
 
     @classmethod
-    def from_settings(cls, **overrides: Any) -> "AgentDeps":
+    def from_settings(cls, **overrides: Any) -> AgentDeps:
         """Build from ``Settings`` with optional field overrides."""
         settings = get_settings()
         kwargs: dict[str, Any] = {
@@ -261,9 +259,7 @@ def _build_llm(deps: AgentDeps) -> BaseChatModel:
     if deps.provider == "anthropic":
         api_key = deps.anthropic_api_key or settings.anthropic_api_key
         if not api_key:
-            raise ValueError(
-                "Anthropic API key not configured (SPECTRAL_ANTHROPIC_API_KEY)"
-            )
+            raise ValueError("Anthropic API key not configured (SPECTRAL_ANTHROPIC_API_KEY)")
         return ChatAnthropic(
             model=deps.model,
             temperature=deps.temperature,

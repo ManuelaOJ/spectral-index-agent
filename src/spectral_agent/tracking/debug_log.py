@@ -34,10 +34,9 @@ Usage
 
 from __future__ import annotations
 
-import json
 import logging
 import threading
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -167,7 +166,7 @@ class DebugLogger:
         resolved_session_id = session_id or self._active_session_id
 
         rec = DebugRecord(
-            timestamp=datetime.now(timezone.utc).isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
             session_id=resolved_session_id,
             satellite=satellite,
             sensor=sensor,
@@ -235,9 +234,7 @@ class DebugLogger:
                 if r.bands_used
                 else "server-side"
             )
-            stats_str = (
-                ", ".join(f"{k}={v}" for k, v in r.stats.items()) if r.stats else "-"
-            )
+            stats_str = ", ".join(f"{k}={v}" for k, v in r.stats.items()) if r.stats else "-"
 
             lines.append(
                 f"- **{r.index_name}** ({r.satellite}/{r.sensor})\n"

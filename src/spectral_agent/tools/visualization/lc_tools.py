@@ -84,9 +84,9 @@ def generate_thematic_map_tool(
     Use after compute_spectral_index_tool.
     """
     from spectral_agent.tools.visualization import (
-        generate_thematic_map,
-        generate_interactive_map,
         MapConfig,
+        generate_interactive_map,
+        generate_thematic_map,
     )
 
     rpath = Path(raster_path)
@@ -104,7 +104,11 @@ def generate_thematic_map_tool(
     logger.info(
         "generate_thematic_map_tool called: raster_path=%s, index=%s, "
         "map_type=%s, scene_id=%s, satellite=%s",
-        raster_path, index_name, map_type, scene_id, satellite,
+        raster_path,
+        index_name,
+        map_type,
+        scene_id,
+        satellite,
     )
 
     results: dict[str, Any] = {
@@ -113,9 +117,7 @@ def generate_thematic_map_tool(
         "outputs": {},
     }
 
-    with track_step(
-        "map_rendering", index_name=index_name.upper(), session_id=sid
-    ) as step:
+    with track_step("map_rendering", index_name=index_name.upper(), session_id=sid) as step:
         try:
             if map_type in ("static", "both"):
                 png_path = output_dir / f"{rpath.stem}_map.png"
@@ -126,25 +128,17 @@ def generate_thematic_map_tool(
                     satellite=satellite,
                     language=language,
                 )
-                static_result = generate_thematic_map(
-                    rpath, index_name, png_path, config=cfg
-                )
+                static_result = generate_thematic_map(rpath, index_name, png_path, config=cfg)
                 results["outputs"]["static_png"] = str(static_result.output_path)
 
             if map_type in ("interactive", "both"):
                 html_path = output_dir / f"{rpath.stem}_map.html"
-                interactive_result = generate_interactive_map(
-                    rpath, index_name, html_path
-                )
-                results["outputs"]["interactive_html"] = str(
-                    interactive_result.output_path
-                )
+                interactive_result = generate_interactive_map(rpath, index_name, html_path)
+                results["outputs"]["interactive_html"] = str(interactive_result.output_path)
 
             results["outputs"]["source_geotiff"] = str(rpath)
             results["message"] = f"Generated {map_type} map(s) for {index_name.upper()}"
-            step.set_metadata(
-                map_type=map_type, outputs=list(results["outputs"].keys())
-            )
+            step.set_metadata(map_type=map_type, outputs=list(results["outputs"].keys()))
 
         except Exception as e:
             logger.error("Map generation failed: %s", e, exc_info=True)

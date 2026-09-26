@@ -12,12 +12,11 @@ from __future__ import annotations
 
 import logging
 from datetime import date
-from pathlib import Path
 
 from spectral_agent.schemas.spectral_request import (
     DateRange,
-    ExtractionResult,
     ExtractedGeometry,
+    ExtractionResult,
     GeometryType,
     LandsatSensor,
     NormalizedRequest,

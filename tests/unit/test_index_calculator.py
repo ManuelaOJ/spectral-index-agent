@@ -13,26 +13,25 @@ To get a desired reflectance *r*, we reverse:
     https://www.usgs.gov/faqs/how-do-i-use-a-scale-factor-landsat-level-2-science-products
 """
 
+from pathlib import Path
+
 import numpy as np
 import pytest
 import rasterio
-from pathlib import Path
 from rasterio.crs import CRS
 from rasterio.transform import from_bounds
 
 from spectral_agent.schemas.spectral_request import LandsatSensor
 from spectral_agent.tools.raster.index_calculator import (
+    _EPS,
+    LANDSAT_C2_L2_OFFSET,
+    LANDSAT_C2_L2_SCALE,
     IndexResult,
-    compute_index,
     compute_and_save,
+    compute_index,
     compute_indices,
     list_supported_indices,
-    INDEX_FORMULAS,
-    LANDSAT_C2_L2_SCALE,
-    LANDSAT_C2_L2_OFFSET,
-    _EPS,
 )
-
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Helpers
@@ -42,9 +41,7 @@ from spectral_agent.tools.raster.index_calculator import (
 RASTER_CRS = CRS.from_epsg(32618)
 RASTER_WIDTH = 20
 RASTER_HEIGHT = 20
-RASTER_TRANSFORM = from_bounds(
-    500000, 700000, 500600, 700600, RASTER_WIDTH, RASTER_HEIGHT
-)
+RASTER_TRANSFORM = from_bounds(500000, 700000, 500600, 700600, RASTER_WIDTH, RASTER_HEIGHT)
 NODATA = 0
 
 
@@ -105,6 +102,7 @@ def write_band_with_nodata(
 # ─────────────────────────────────────────────────────────────────────────────
 # Fixtures
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 @pytest.fixture
 def bands_dir(tmp_path: Path) -> Path:
@@ -176,15 +174,14 @@ def all_l89_bands(bands_dir: Path) -> dict[str, Path]:
     }
     paths = {}
     for band, refl in spec.items():
-        paths[band] = write_synthetic_band(
-            bands_dir / f"{band}.tif", reflectance_to_dn(refl)
-        )
+        paths[band] = write_synthetic_band(bands_dir / f"{band}.tif", reflectance_to_dn(refl))
     return paths
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Tests — pure compute_index (arrays)
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class TestComputeIndex:
     """Test the pure NumPy compute_index function."""
@@ -269,6 +266,7 @@ class TestComputeIndex:
 # Tests — compute_and_save (file I/O)
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class TestComputeAndSave:
     """Test end-to-end compute + GeoTIFF write."""
 
@@ -293,9 +291,7 @@ class TestComputeAndSave:
 
     def test_evi_file(self, evi_band_paths, output_dir):
         out = output_dir / "EVI.tif"
-        result = compute_and_save(
-            "EVI", evi_band_paths, LandsatSensor.LANDSAT_8, out
-        )
+        result = compute_and_save("EVI", evi_band_paths, LandsatSensor.LANDSAT_8, out)
         assert result.output_path.exists()
         expected = 2.5 * 0.40 / (0.50 + 0.60 - 0.375 + 1.0)
         assert abs(result.value_mean - expected) < 0.02
@@ -369,7 +365,9 @@ class TestComputeAndSave:
         del ndvi_band_paths["SR_B4"]
         with pytest.raises(ValueError, match="requires band"):
             compute_and_save(
-                "NDVI", ndvi_band_paths, LandsatSensor.LANDSAT_9,
+                "NDVI",
+                ndvi_band_paths,
+                LandsatSensor.LANDSAT_9,
                 output_dir / "fail.tif",
             )
 
@@ -381,7 +379,9 @@ class TestComputeAndSave:
         }
         with pytest.raises(FileNotFoundError):
             compute_and_save(
-                "NDVI", paths, LandsatSensor.LANDSAT_9,
+                "NDVI",
+                paths,
+                LandsatSensor.LANDSAT_9,
                 output_dir / "fail.tif",
             )
 
@@ -403,6 +403,7 @@ class TestComputeAndSave:
 # ─────────────────────────────────────────────────────────────────────────────
 # Tests — compute_indices (batch)
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class TestComputeIndices:
     """Test batch computation of multiple indices."""
@@ -440,9 +441,7 @@ class TestComputeIndices:
             assert not np.isnan(r.value_mean)
 
     def test_batch_empty_list(self, ndvi_band_paths, output_dir):
-        results = compute_indices(
-            [], ndvi_band_paths, LandsatSensor.LANDSAT_9, output_dir
-        )
+        results = compute_indices([], ndvi_band_paths, LandsatSensor.LANDSAT_9, output_dir)
         assert results == []
 
 
@@ -450,8 +449,8 @@ class TestComputeIndices:
 # Tests — utilities
 # ─────────────────────────────────────────────────────────────────────────────
 
-class TestUtilities:
 
+class TestUtilities:
     def test_list_supported_indices(self):
         indices = list_supported_indices()
         assert isinstance(indices, list)

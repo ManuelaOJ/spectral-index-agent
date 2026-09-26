@@ -263,7 +263,7 @@ def _build_legend_html(
     for i in range(6):
         frac = i / 5
         r, g, b, _ = cmap(frac)
-        stops.append(f"rgb({int(r*255)},{int(g*255)},{int(b*255)}) {int(frac*100)}%")
+        stops.append(f"rgb({int(r * 255)},{int(g * 255)},{int(b * 255)}) {int(frac * 100)}%")
     gradient = ", ".join(stops)
 
     return f"""

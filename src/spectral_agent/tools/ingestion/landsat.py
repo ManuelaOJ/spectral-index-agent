@@ -8,8 +8,6 @@ API Documentation: https://m2m.cr.usgs.gov/
 """
 
 import asyncio
-import hashlib
-import json
 import logging
 from datetime import date, datetime
 from pathlib import Path
@@ -27,10 +25,9 @@ from spectral_agent.core.exceptions import (
 )
 from spectral_agent.schemas.imagery import (
     BoundingBox,
-    DownloadResult,
+    SatelliteType,
     SceneMetadata,
     SearchResult,
-    SatelliteType,
 )
 
 logger = logging.getLogger(__name__)
@@ -305,9 +302,7 @@ class LandsatClient(BaseIngestionTool):
             return True
 
         except IngestionError as e:
-            raise AuthenticationError(
-                "USGS authentication failed", details={"error": str(e)}
-            )
+            raise AuthenticationError("USGS authentication failed", details={"error": str(e)})
 
     async def logout(self) -> None:
         """Logout and invalidate the API key."""
@@ -336,9 +331,7 @@ class LandsatClient(BaseIngestionTool):
             )
         return self.BAND_INFO_BY_COLLECTION[collection]
 
-    def _validate_bands(
-        self, bands: list[str], collection: str = "landsat_ot_c2_l2"
-    ) -> list[str]:
+    def _validate_bands(self, bands: list[str], collection: str = "landsat_ot_c2_l2") -> list[str]:
         """
         Validate band names for a specific collection.
 
@@ -492,9 +485,7 @@ class LandsatClient(BaseIngestionTool):
                 scene = self._parse_scene_metadata(scene_data, collection)
                 scenes.append(scene)
             except Exception as e:
-                logger.warning(
-                    "Error parsing scene %s: %s", scene_data.get("entityId"), e
-                )
+                logger.warning("Error parsing scene %s: %s", scene_data.get("entityId"), e)
 
         return scenes
 
@@ -583,10 +574,7 @@ class LandsatClient(BaseIngestionTool):
 
         available_products: list[dict] = []
         for product in options:
-            if (
-                product.get("available") is True
-                and product.get("downloadSystem") != "folder"
-            ):
+            if product.get("available") is True and product.get("downloadSystem") != "folder":
                 available_products.append(
                     {
                         "entityId": product["entityId"],
@@ -596,17 +584,14 @@ class LandsatClient(BaseIngestionTool):
 
         if not available_products:
             logger.warning(
-                "No available (non-folder) products for %s. "
-                "download-options returned %d items.",
+                "No available (non-folder) products for %s. download-options returned %d items.",
                 scene_id,
                 len(options),
             )
             logger.debug("download-options response: %s", options)
             return None
 
-        logger.info(
-            "Found %d downloadable product(s) for %s", len(available_products), scene_id
-        )
+        logger.info("Found %d downloadable product(s) for %s", len(available_products), scene_id)
 
         # ── Step 2: download-request ──
         label = f"spectral-agent-{scene_id[:20]}"
@@ -647,7 +632,7 @@ class LandsatClient(BaseIngestionTool):
         preparing = result.get("preparingDownloads", [])
         if not preparing:
             logger.warning(
-                "Download for %s not in any response category. " "Full response: %s",
+                "Download for %s not in any response category. Full response: %s",
                 scene_id,
                 result,
             )
@@ -672,15 +657,13 @@ class LandsatClient(BaseIngestionTool):
             await asyncio.sleep(retry_delay)
             logger.info("download-retrieve attempt %d/%d...", attempt, max_retries)
 
-            retrieve_result = await self._make_request(
-                "download-retrieve", data=retrieve_payload
-            )
+            retrieve_result = await self._make_request("download-retrieve", data=retrieve_payload)
 
             # Check 'available' list
             for item in retrieve_result.get("available", []):
                 if item.get("downloadId") in preparing_ids and item.get("url"):
                     logger.info(
-                        "Download for %s ready via download-retrieve " "(attempt %d)",
+                        "Download for %s ready via download-retrieve (attempt %d)",
                         scene_id,
                         attempt,
                     )
@@ -690,15 +673,14 @@ class LandsatClient(BaseIngestionTool):
             for item in retrieve_result.get("requested", []):
                 if item.get("downloadId") in preparing_ids and item.get("url"):
                     logger.info(
-                        "Download for %s ready via download-retrieve/requested "
-                        "(attempt %d)",
+                        "Download for %s ready via download-retrieve/requested (attempt %d)",
                         scene_id,
                         attempt,
                     )
                     return item["url"]
 
         logger.warning(
-            "Download for %s still preparing after %d attempts " "(%.0f min)",
+            "Download for %s still preparing after %d attempts (%.0f min)",
             scene_id,
             max_retries,
             max_retries * retry_delay / 60,
@@ -741,9 +723,7 @@ class LandsatClient(BaseIngestionTool):
                     continue
 
         if not collection:
-            raise DownloadError(
-                "Could not find scene in any collection", scene_id=scene_id
-            )
+            raise DownloadError("Could not find scene in any collection", scene_id=scene_id)
 
         # Get download URL
         download_url = await self.request_download(scene_id, collection)
@@ -770,9 +750,7 @@ class LandsatClient(BaseIngestionTool):
                 downloaded = 0
 
                 with open(output_path, "wb") as f:
-                    async for chunk in response.aiter_bytes(
-                        self.settings.download_chunk_size
-                    ):
+                    async for chunk in response.aiter_bytes(self.settings.download_chunk_size):
                         f.write(chunk)
                         downloaded += len(chunk)
 

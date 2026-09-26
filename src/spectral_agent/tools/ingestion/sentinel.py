@@ -12,26 +12,25 @@ import os
 import re
 from datetime import date, datetime, timedelta
 from pathlib import Path
-from typing import Any
 
-import numpy as np
+import rasterio
+import requests
 from oauthlib.oauth2 import BackendApplicationClient
 from pyproj import Transformer
-from requests_oauthlib import OAuth2Session
-import requests
-import rasterio
 from rasterio.crs import CRS as RasterioCRS
 from rasterio.transform import from_bounds
-
+from requests_oauthlib import OAuth2Session
 from sentinelhub import (
-    SHConfig,
     CRS,
-    BBox as SHBBox,
     DataCollection,
     MimeType,
     MosaickingOrder,
     SentinelHubRequest,
+    SHConfig,
     bbox_to_dimensions,
+)
+from sentinelhub import (
+    BBox as SHBBox,
 )
 
 from spectral_agent.config import get_settings
@@ -44,10 +43,9 @@ from spectral_agent.core.exceptions import (
 )
 from spectral_agent.schemas.imagery import (
     BoundingBox,
-    DownloadResult,
+    SatelliteType,
     SceneMetadata,
     SearchResult,
-    SatelliteType,
 )
 
 logger = logging.getLogger(__name__)
@@ -100,9 +98,7 @@ def _utm_crs_from_bbox(bbox: "BoundingBox") -> tuple[int, CRS]:
     return epsg, CRS(f"EPSG:{epsg}")
 
 
-def _reproject_bbox_to_utm(
-    bbox: "BoundingBox", utm_epsg: int
-) -> tuple[float, float, float, float]:
+def _reproject_bbox_to_utm(bbox: "BoundingBox", utm_epsg: int) -> tuple[float, float, float, float]:
     """Reproject a WGS84 bounding box to a UTM CRS.
 
     Returns
@@ -233,9 +229,7 @@ class SentinelClient(BaseIngestionTool):
 
         try:
             # Create OAuth2 session using BackendApplicationClient (client credentials flow)
-            client = BackendApplicationClient(
-                client_id=self.settings.copernicus_client_id
-            )
+            client = BackendApplicationClient(client_id=self.settings.copernicus_client_id)
             self._oauth_session = OAuth2Session(client=client)
 
             # Register compliance hook to handle server errors correctly
@@ -540,9 +534,7 @@ function evaluatePixel(sample) {
                     },
                 )
 
-            logger.info(
-                "Downloading %s - all 12 bands at %sm resolution", scene_id, resolution
-            )
+            logger.info("Downloading %s - all 12 bands at %sm resolution", scene_id, resolution)
             logger.info("Bands: %s", self.ALL_BANDS)
             logger.info("Image size: %s x %s pixels", sh_size[0], sh_size[1])
 
@@ -563,9 +555,7 @@ function evaluatePixel(sample) {
                         mosaicking_order=MosaickingOrder.LEAST_CC,
                     )
                 ],
-                responses=[
-                    SentinelHubRequest.output_response("default", MimeType.TIFF)
-                ],
+                responses=[SentinelHubRequest.output_response("default", MimeType.TIFF)],
                 bbox=sh_bbox,
                 size=sh_size,
                 config=sh_config,
@@ -624,9 +614,7 @@ function evaluatePixel(sample) {
 
             file_size_mb = output_path.stat().st_size / 1024 / 1024
             logger.info("Successfully saved %s (%.2f MB)", output_path, file_size_mb)
-            logger.info(
-                "Values are surface reflectance (FLOAT32). No scaling needed."
-            )
+            logger.info("Values are surface reflectance (FLOAT32). No scaling needed.")
             return output_path
 
         except DownloadError:
@@ -772,9 +760,7 @@ function evaluatePixel(sample) {
                         mosaicking_order=MosaickingOrder.LEAST_CC,
                     )
                 ],
-                responses=[
-                    SentinelHubRequest.output_response("default", MimeType.TIFF)
-                ],
+                responses=[SentinelHubRequest.output_response("default", MimeType.TIFF)],
                 bbox=sh_bbox,
                 size=sh_size,
                 config=sh_config,
@@ -802,9 +788,7 @@ function evaluatePixel(sample) {
             if not output_path or not output_path.exists():
                 # Fallback: save manually
                 indices_str = "_".join(indices)
-                output_filename = (
-                    f"{scene_id.replace('.SAFE', '')}_{indices_str}_{resolution}m.tif"
-                )
+                output_filename = f"{scene_id.replace('.SAFE', '')}_{indices_str}_{resolution}m.tif"
                 output_path = scene_folder / output_filename
 
                 image_data = data[0]
@@ -862,7 +846,9 @@ function evaluatePixel(sample) {
         await self._ensure_authenticated()
 
         # Query Catalog API for specific feature
-        url = f"{self.settings.sentinel_hub_catalog_url}/collections/sentinel-2-l2a/items/{scene_id}"
+        url = (
+            f"{self.settings.sentinel_hub_catalog_url}/collections/sentinel-2-l2a/items/{scene_id}"
+        )
         response = self._oauth_session.get(url)
         response.raise_for_status()
 

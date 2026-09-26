@@ -5,11 +5,10 @@ Provides abstract base classes that define the interface for satellite
 data ingestion tools.
 """
 
+import logging
 from abc import ABC, abstractmethod
 from datetime import date
-import logging
 from pathlib import Path
-from typing import Any
 
 from spectral_agent.schemas.imagery import BoundingBox, SceneMetadata, SearchResult
 
@@ -150,9 +149,7 @@ class BaseIngestionTool(ABC):
         )
 
         scenes_to_download = (
-            search_result.scenes[:max_scenes]
-            if max_scenes is not None
-            else search_result.scenes
+            search_result.scenes[:max_scenes] if max_scenes is not None else search_result.scenes
         )
         downloaded_paths = []
         for scene in scenes_to_download:

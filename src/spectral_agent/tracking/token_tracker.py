@@ -39,10 +39,9 @@ Pricing sources (verified 2026-03-05):
 
 from __future__ import annotations
 
-import json
 import logging
 import threading
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -116,9 +115,7 @@ class UsageRecord(BaseModel):
     session_id: str = Field(default="", description="Session / thread identifier")
     model: str = Field(description="LLM model name")
     provider: str = Field(description="LLM provider (openai / anthropic)")
-    operation: str = Field(
-        description="Operation type (extraction / normalization / rules / etc.)"
-    )
+    operation: str = Field(description="Operation type (extraction / normalization / rules / etc.)")
     input_tokens: int = Field(ge=0)
     output_tokens: int = Field(ge=0)
     total_tokens: int = Field(ge=0)
@@ -182,7 +179,7 @@ class TokenTracker:
         output_cost = output_tokens * pricing["output"] / 1_000_000
 
         rec = UsageRecord(
-            timestamp=datetime.now(timezone.utc).isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
             user=user or self._default_user,
             session_id=session_id,
             model=model,

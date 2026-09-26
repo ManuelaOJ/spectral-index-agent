@@ -9,21 +9,20 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any
 
 from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import InjectedToolArg, tool
 from pydantic import BaseModel, Field
 
-from spectral_agent.config import get_settings
 from spectral_agent.schemas.imagery import BoundingBox
 from spectral_agent.schemas.spectral_request import LandsatSensor
 from spectral_agent.tracking.debug_log import get_debug_logger
 from spectral_agent.tracking.metrics import track_step
 from spectral_agent.utils.session_paths import (
     get_session_id,
-    session_raw_dir,
     session_processed_dir,
+    session_raw_dir,
 )
 
 logger = logging.getLogger(__name__)
@@ -45,8 +44,7 @@ class CropLandsatBandsInput(BaseModel):
     index_names: list[str] = Field(
         ...,
         description=(
-            "Spectral indices to prepare bands for. "
-            "Supported: NDVI, EVI, SAVI, NDWI, NBR, NDBI"
+            "Spectral indices to prepare bands for. Supported: NDVI, EVI, SAVI, NDWI, NBR, NDBI"
         ),
     )
     sensor: str = Field(
@@ -56,18 +54,10 @@ class CropLandsatBandsInput(BaseModel):
             "'Landsat 8', or 'Landsat 9'"
         ),
     )
-    west: float = Field(
-        ..., ge=-180, le=180, description="Western boundary longitude (WGS84)"
-    )
-    south: float = Field(
-        ..., ge=-90, le=90, description="Southern boundary latitude (WGS84)"
-    )
-    east: float = Field(
-        ..., ge=-180, le=180, description="Eastern boundary longitude (WGS84)"
-    )
-    north: float = Field(
-        ..., ge=-90, le=90, description="Northern boundary latitude (WGS84)"
-    )
+    west: float = Field(..., ge=-180, le=180, description="Western boundary longitude (WGS84)")
+    south: float = Field(..., ge=-90, le=90, description="Southern boundary latitude (WGS84)")
+    east: float = Field(..., ge=-180, le=180, description="Eastern boundary longitude (WGS84)")
+    north: float = Field(..., ge=-90, le=90, description="Northern boundary latitude (WGS84)")
 
 
 class ComputeSpectralIndexInput(BaseModel):
@@ -76,10 +66,7 @@ class ComputeSpectralIndexInput(BaseModel):
     scene_id: str = Field(..., description="Landsat scene display ID")
     index_names: list[str] = Field(
         ...,
-        description=(
-            "Spectral indices to compute. "
-            "Supported: NDVI, EVI, SAVI, NDWI, NBR, NDBI"
-        ),
+        description=("Spectral indices to compute. Supported: NDVI, EVI, SAVI, NDWI, NBR, NDBI"),
     )
     band_paths: dict[str, str] | None = Field(
         default=None,
@@ -231,8 +218,7 @@ def compute_spectral_index_tool(
 
     sid = get_session_id(config)
     logger.info(
-        "compute_spectral_index_tool called: scene_id=%s, sensor=%s, "
-        "indices=%s, band_paths=%s",
+        "compute_spectral_index_tool called: scene_id=%s, sensor=%s, indices=%s, band_paths=%s",
         scene_id,
         sensor,
         index_names,
@@ -263,7 +249,6 @@ def compute_spectral_index_tool(
                 LANDSAT_89_INDEX_BANDS,
                 LANDSAT_457_INDEX_BANDS,
             )
-            from spectral_agent.tracking.debug_log import FORMULA_DESCRIPTIONS
 
             if sensor_enum in (LandsatSensor.LANDSAT_8, LandsatSensor.LANDSAT_9):
                 band_table = LANDSAT_89_INDEX_BANDS
@@ -338,15 +323,12 @@ def compute_spectral_index_tool(
                 "debug_log_path": str(dbg.log_path) if dbg.log_path else None,
                 "band_paths_source": "input" if band_paths else "cache",
                 "message": (
-                    f"Computed {len(index_summaries)} indices for {scene_id} "
-                    f"using {sensor} bands"
+                    f"Computed {len(index_summaries)} indices for {scene_id} using {sensor} bands"
                 ),
             }
 
         except Exception as e:
-            logger.error(
-                "Index computation failed for %s: %s", scene_id, e, exc_info=True
-            )
+            logger.error("Index computation failed for %s: %s", scene_id, e, exc_info=True)
             step.mark_failure(str(e))
             return {
                 "success": False,
@@ -375,9 +357,7 @@ def _required_bands_for_indices(
     required: set[str] = set()
     for index_name in index_names:
         if index_name not in band_table:
-            raise ValueError(
-                f"Index '{index_name}' is not supported for {sensor.value}."
-            )
+            raise ValueError(f"Index '{index_name}' is not supported for {sensor.value}.")
         required.update(band_table[index_name].values())
     return required
 
@@ -483,13 +463,13 @@ def list_available_indices_tool() -> dict[str, Any]:
     Use this to discover what indices are available and what bands
     each one needs.
     """
-    from spectral_agent.tools.raster.index_calculator import (
-        INDEX_VALUE_RANGES,
-        list_supported_indices,
-    )
     from spectral_agent.schemas.spectral_request import (
         LANDSAT_89_INDEX_BANDS,
         LANDSAT_457_INDEX_BANDS,
+    )
+    from spectral_agent.tools.raster.index_calculator import (
+        INDEX_VALUE_RANGES,
+        list_supported_indices,
     )
     from spectral_agent.tools.visualization.thematic_map import INDEX_FULL_NAMES
 

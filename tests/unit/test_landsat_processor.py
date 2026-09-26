@@ -5,8 +5,6 @@ These tests use synthetic GeoTIFF fixtures (tiny rasters) so they run
 fast and require no real Landsat data.
 """
 
-import json
-import os
 import tarfile
 from pathlib import Path
 
@@ -20,7 +18,6 @@ from spectral_agent.schemas.imagery import BoundingBox
 from spectral_agent.schemas.spectral_request import LandsatSensor
 from spectral_agent.tools.raster.band_cache import BandCache
 from spectral_agent.tools.raster.landsat_processor import LandsatProcessor
-
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Helpers – synthetic raster / tar creation
@@ -121,7 +118,9 @@ def processed_dir(tmp_path: Path) -> Path:
 def fake_scene_dir(raw_dir: Path) -> Path:
     """Extracted scene with SR_B2..B7 and QA_PIXEL."""
     scene_dir = raw_dir / SCENE_ID
-    _create_fake_scene(scene_dir, ["SR_B2", "SR_B3", "SR_B4", "SR_B5", "SR_B6", "SR_B7", "QA_PIXEL"])
+    _create_fake_scene(
+        scene_dir, ["SR_B2", "SR_B3", "SR_B4", "SR_B5", "SR_B6", "SR_B7", "QA_PIXEL"]
+    )
     return scene_dir
 
 
@@ -254,7 +253,9 @@ class TestLandsatProcessor:
     def test_find_band_file_missing(self, fake_scene_dir: Path):
         assert LandsatProcessor.find_band_file(fake_scene_dir, "SR_B99") is None
 
-    def test_crop_band(self, processor: LandsatProcessor, fake_scene_dir: Path, processed_dir: Path):
+    def test_crop_band(
+        self, processor: LandsatProcessor, fake_scene_dir: Path, processed_dir: Path
+    ):
         src = LandsatProcessor.find_band_file(fake_scene_dir, "SR_B4")
         out = processed_dir / "cropped.tif"
         meta = processor.crop_band(src, BBOX_COLOMBIA, out)
@@ -266,7 +267,9 @@ class TestLandsatProcessor:
         assert meta["width"] < COLS
         assert meta["height"] < ROWS
 
-    def test_crop_band_preserves_crs(self, processor: LandsatProcessor, fake_scene_dir: Path, processed_dir: Path):
+    def test_crop_band_preserves_crs(
+        self, processor: LandsatProcessor, fake_scene_dir: Path, processed_dir: Path
+    ):
         src = LandsatProcessor.find_band_file(fake_scene_dir, "SR_B5")
         out = processed_dir / "cropped_b5.tif"
         meta = processor.crop_band(src, BBOX_COLOMBIA, out)
@@ -290,18 +293,30 @@ class TestLandsatProcessor:
     def test_cache_reuses_bands(self, processor: LandsatProcessor, fake_scene_dir: Path):
         """Second call to crop_bands_for_index should hit cache."""
         processor.crop_bands_for_index(
-            SCENE_ID, fake_scene_dir, "NDVI", LandsatSensor.LANDSAT_9, BBOX_COLOMBIA,
+            SCENE_ID,
+            fake_scene_dir,
+            "NDVI",
+            LandsatSensor.LANDSAT_9,
+            BBOX_COLOMBIA,
         )
         # SAVI also needs SR_B4 + SR_B5 — should be cached
         paths = processor.crop_bands_for_index(
-            SCENE_ID, fake_scene_dir, "SAVI", LandsatSensor.LANDSAT_9, BBOX_COLOMBIA,
+            SCENE_ID,
+            fake_scene_dir,
+            "SAVI",
+            LandsatSensor.LANDSAT_9,
+            BBOX_COLOMBIA,
         )
         assert "SR_B4" in paths
         assert "SR_B5" in paths
 
     def test_crop_multiple_indices(self, processor: LandsatProcessor, fake_scene_dir: Path):
         result = processor.crop_multiple_indices(
-            SCENE_ID, fake_scene_dir, ["NDVI", "NDWI"], LandsatSensor.LANDSAT_9, BBOX_COLOMBIA,
+            SCENE_ID,
+            fake_scene_dir,
+            ["NDVI", "NDWI"],
+            LandsatSensor.LANDSAT_9,
+            BBOX_COLOMBIA,
         )
         assert "NDVI" in result
         assert "NDWI" in result
@@ -312,7 +327,11 @@ class TestLandsatProcessor:
     def test_unsupported_index_raises(self, processor: LandsatProcessor, fake_scene_dir: Path):
         with pytest.raises(ValueError, match="not in band table"):
             processor.crop_bands_for_index(
-                SCENE_ID, fake_scene_dir, "FAKE_IDX", LandsatSensor.LANDSAT_9, BBOX_COLOMBIA,
+                SCENE_ID,
+                fake_scene_dir,
+                "FAKE_IDX",
+                LandsatSensor.LANDSAT_9,
+                BBOX_COLOMBIA,
             )
 
     def test_list_scene_bands(self, fake_scene_dir: Path):
