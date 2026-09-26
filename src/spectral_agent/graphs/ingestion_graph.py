@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Literal, TypedDict
 
 from langgraph.graph import END, StateGraph
+from langgraph.graph.state import CompiledStateGraph
 
 from spectral_agent.config import get_settings
 from spectral_agent.schemas.imagery import (
@@ -45,7 +46,7 @@ class IngestionState(TypedDict, total=False):
     end_date: str
     satellites: list[str]
     max_cloud_cover: float
-    max_scenes: int
+    max_scenes: int | None
 
     # Spectral indices to compute (if None, downloads all bands)
     indices: list[str] | None  # e.g., ["NDVI", "NDWI", "NBR"]
@@ -450,7 +451,7 @@ def should_download(state: IngestionState) -> Literal["download", "finalize"]:
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-def create_ingestion_graph() -> StateGraph:
+def create_ingestion_graph() -> CompiledStateGraph:
     """
     Create the ingestion workflow graph.
 

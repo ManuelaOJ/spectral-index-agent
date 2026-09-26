@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import logging
+from typing import cast
 
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -124,7 +125,7 @@ async def extract_request(
     provider = "openai" if "gpt" in str(model_name).lower() else "anthropic"
     tracker.record_from_response(
         response=response,
-        model=model_name,
+        model=str(model_name),
         provider=provider,
         operation="extraction",
         user=user,
@@ -132,7 +133,7 @@ async def extract_request(
     )
 
     # Parse LLM output
-    raw_text = response.content.strip()
+    raw_text = cast(str, response.content).strip()
     # Strip markdown fences if present
     if raw_text.startswith("```"):
         raw_text = raw_text.split("\n", 1)[1] if "\n" in raw_text else raw_text[3:]

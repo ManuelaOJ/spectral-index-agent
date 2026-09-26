@@ -181,7 +181,7 @@ def generate_thematic_map(
     top = transform.f
     right = left + cols * transform.a
     bottom = top + rows * transform.e  # transform.e is negative
-    extent = [left, right, bottom, top]
+    extent = (left, right, bottom, top)
 
     # ── Determine coordinate type ───────────────────────────────────────
     coord_type = "Projected (m)" if is_projected else "Geographic (°)"
@@ -318,7 +318,7 @@ def _nice_grid_interval(span: float, target_ticks: int = 5) -> float:
 
 def _setup_coordinate_grid(
     ax,
-    extent: list[float],
+    extent: tuple[float, float, float, float],
     config,
     *,
     is_projected: bool = True,
@@ -938,7 +938,7 @@ def _parse_svg_d(d: str) -> MplPath:
     """Convert an SVG path *d* string to a :class:`matplotlib.path.Path`."""
     tokens = _tokenize_svg_d(d)
     verts: list[tuple[float, float]] = []
-    codes: list[int] = []
+    codes: list[np.uint8] = []
     cx, cy = 0.0, 0.0
     sx, sy = 0.0, 0.0  # subpath start
     i = 0
@@ -1035,7 +1035,7 @@ def _render_svg_to_image(svg_path: Path, height_px: int = 160) -> np.ndarray:
     dpi = height_px / fig_h
 
     fig_tmp = plt.figure(figsize=(fig_w, fig_h), dpi=dpi)
-    ax_tmp = fig_tmp.add_axes([0, 0, 1, 1])
+    ax_tmp = fig_tmp.add_axes((0, 0, 1, 1))
     ax_tmp.set_xlim(0, vb_w)
     ax_tmp.set_ylim(vb_h, 0)  # y-down like SVG so arrow points north
     ax_tmp.axis("off")

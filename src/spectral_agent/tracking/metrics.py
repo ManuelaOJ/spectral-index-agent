@@ -117,6 +117,7 @@ class PipelineMetrics:
         self._records: list[StepRecord] = []
         self._lock = threading.Lock()
 
+        self._log_path: Path | None
         if log_path is not None:
             self._log_path = Path(log_path)
             self._log_path.parent.mkdir(parents=True, exist_ok=True)

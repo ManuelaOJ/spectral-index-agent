@@ -12,6 +12,7 @@ The ``session_id`` is the LangGraph ``thread_id`` pulled from the
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
@@ -21,7 +22,7 @@ from spectral_agent.config import get_settings
 _DEFAULT_SESSION = "default"
 
 
-def get_session_id(config: dict[str, Any] | None) -> str:
+def get_session_id(config: Mapping[str, Any] | None) -> str:
     """Extract ``thread_id`` from a LangGraph ``RunnableConfig``.
 
     Falls back to ``"default"`` when *config* is ``None`` or has no

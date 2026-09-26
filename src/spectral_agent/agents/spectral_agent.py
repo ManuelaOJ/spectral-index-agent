@@ -17,6 +17,7 @@ from typing import Any, Literal
 from langchain_anthropic import ChatAnthropic
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import HumanMessage
+from langchain_core.runnables import RunnableConfig
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
@@ -264,7 +265,7 @@ async def run_agent_query(
     if agent is None:
         agent = create_spectral_agent(config)
 
-    invoke_config: dict[str, Any] = {}
+    invoke_config: RunnableConfig = {}
     if thread_id:
         invoke_config = {"configurable": {"thread_id": thread_id}}
 

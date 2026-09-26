@@ -11,7 +11,7 @@ import asyncio
 import logging
 from datetime import date, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import httpx
 
@@ -163,7 +163,7 @@ class LandsatClient(BaseIngestionTool):
         endpoint: str,
         data: dict | None = None,
         require_auth: bool = True,
-    ) -> dict:
+    ) -> Any:
         """
         Make a request to the M2M API.
 
@@ -742,7 +742,7 @@ class LandsatClient(BaseIngestionTool):
             async with client.stream(
                 "GET",
                 download_url,
-                headers={"X-Auth-Token": self._api_key},
+                headers={"X-Auth-Token": cast(str, self._api_key)},
             ) as response:
                 response.raise_for_status()
 

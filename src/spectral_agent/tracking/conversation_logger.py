@@ -108,6 +108,7 @@ class ConversationLogger:
         self._active_session_id: str = ""
         self._turn_counters: dict[str, int] = {}
 
+        self._log_path: Path | None
         if log_path is not None:
             self._log_path = Path(log_path)
             self._log_path.parent.mkdir(parents=True, exist_ok=True)

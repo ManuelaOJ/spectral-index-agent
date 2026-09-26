@@ -12,6 +12,7 @@ import os
 import re
 from datetime import date, datetime, timedelta
 from pathlib import Path
+from typing import cast
 
 import rasterio
 import requests
@@ -309,7 +310,7 @@ class SentinelClient(BaseIngestionTool):
         url = f"{self.settings.sentinel_hub_catalog_url}/search"
 
         try:
-            response = self._oauth_session.post(
+            response = cast(OAuth2Session, self._oauth_session).post(
                 url,
                 json=search_request,
                 headers={"Content-Type": "application/json"},
@@ -337,11 +338,12 @@ class SentinelClient(BaseIngestionTool):
             )
 
         except requests.exceptions.HTTPError as e:
-            if e.response.status_code == 429:
+            error_response = cast(requests.Response, e.response)
+            if error_response.status_code == 429:
                 raise RateLimitError("Copernicus API rate limit exceeded")
             raise IngestionError(
-                f"Search failed: {e.response.status_code}",
-                details={"error": e.response.text},
+                f"Search failed: {error_response.status_code}",
+                details={"error": error_response.text},
             )
 
     def _parse_stac_feature(self, feature: dict) -> SceneMetadata:
@@ -444,7 +446,9 @@ function evaluatePixel(sample) {
         config.sh_base_url = "https://sh.dataspace.copernicus.eu"
         return config
 
-    async def download(
+    # Sentinel Hub recorta en el servidor, asi que recibe bbox y resolucion en
+    # lugar de la lista de bandas de BaseIngestionTool.download.
+    async def download(  # type: ignore[override]
         self,
         scene_id: str,
         output_dir: Path,
@@ -849,7 +853,7 @@ function evaluatePixel(sample) {
         url = (
             f"{self.settings.sentinel_hub_catalog_url}/collections/sentinel-2-l2a/items/{scene_id}"
         )
-        response = self._oauth_session.get(url)
+        response = cast(OAuth2Session, self._oauth_session).get(url)
         response.raise_for_status()
 
         feature = response.json()

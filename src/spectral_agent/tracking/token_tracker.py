@@ -149,6 +149,7 @@ class TokenTracker:
         self._lock = threading.Lock()
         self._default_user = default_user
 
+        self._log_path: Path | None
         if log_path is not None:
             self._log_path = Path(log_path)
             self._log_path.parent.mkdir(parents=True, exist_ok=True)

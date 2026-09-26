@@ -21,6 +21,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from pathlib import Path
+from typing import cast
 
 import folium
 import numpy as np
@@ -221,11 +222,12 @@ def generate_interactive_map(
 
     # ── Opacity slider ──────────────────────────────────────────────────
     opacity_html = _build_opacity_slider_html(opacity)
-    m.get_root().html.add_child(folium.Element(opacity_html))
+    root = cast(folium.Figure, m.get_root())
+    root.html.add_child(folium.Element(opacity_html))
 
     # ── Legend as a simple HTML box ─────────────────────────────────────
     legend_html = _build_legend_html(name, cmap_name, v0, v1)
-    m.get_root().html.add_child(folium.Element(legend_html))
+    root.html.add_child(folium.Element(legend_html))
 
     # ── Save ────────────────────────────────────────────────────────────
     m.save(str(output_path))

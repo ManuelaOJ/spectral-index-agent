@@ -518,6 +518,7 @@ async def download_sentinel_index_tool(
                 idx_upper = idx_name.upper()
                 idx_def = SPECTRAL_INDICES.get(idx_upper)
                 sentinel_bands = {b: b for b in idx_def.bands} if idx_def else {}
+                extra: dict[str, Any] = {"parameters": {"L": 0.5}} if idx_upper == "SAVI" else {}
                 rec = dbg.log_index_computation(
                     satellite="sentinel",
                     sensor="Sentinel-2",
@@ -529,9 +530,9 @@ async def download_sentinel_index_tool(
                     session_id=sid,
                     scene_id=scene_id,
                     resolution=resolution,
-                    **({"parameters": {"L": 0.5}} if idx_upper == "SAVI" else {}),
+                    **extra,
                 )
-                debug_entry = {
+                debug_entry: dict[str, Any] = {
                     "index": idx_upper,
                     "formula": rec.formula,
                     "bands": list(sentinel_bands.values()),
